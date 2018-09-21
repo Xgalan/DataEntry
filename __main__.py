@@ -11,7 +11,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = Application(master=root)
     app.model = Model()
-    app.master.title("Min Max measurements")
-    app.master.maxsize(270,700)
-    app.master.geometry('{}x{}'.format(240, 570))
+    app.master.title("Data Entry")
     app.mainloop()

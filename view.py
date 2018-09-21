@@ -16,7 +16,7 @@ class Application(tk.Frame):
         self.offset_option = tk.BooleanVar()
         self.offset_value = tk.DoubleVar()
         self.min_max_var = tk.StringVar()
-        self.grid(row=0, columnspan=3)
+        self.grid()
         self.create_widgets()
 
     def alert(self):
@@ -54,31 +54,35 @@ class Application(tk.Frame):
         self.menu = tk.Frame(self, padx=2, pady=2, bd=1)
         self.menu.grid(row=0, sticky='NWE')
 
-        # save to CSV button
-        self.save_btn = tk.Button(self.menu, command=self.export_as_csv,
-                                  image=self.save_icon)
-        self.save_btn.image = self.save_icon
-        self.save_btn.grid(row=0, column=1, sticky='E')
         # quit button
         self.quit = tk.Button(self.menu, image=self.quit_icon, command=self.master.destroy)
         self.quit.image = self.quit_icon
-        self.quit.grid(row=0, column=2, sticky='E')
+        self.quit.grid(row=0, sticky='E')
 
         # editor
         self.editor = tk.LabelFrame(self, text='Measurements: ')
         self.editor.grid(row=1, padx=4, pady=4, sticky='W')
-        # clear text button
-        self.data_entry_clear = tk.Button(self.editor, text="Clear",
-                                          command=self.clear_data_entry)
-        self.data_entry_clear.grid(row=1, column=0, pady=1, sticky='W')
         self.scrollbar = tk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, pady=1, sticky="NS")
         self.data_entry = tk.Text(self.editor, width=24,
                                   yscrollcommand=self.scrollbar.set)
-        self.data_entry.grid(row=0, column=0, sticky='WE')
+        self.data_entry.grid(row=0, column=0, sticky='EW')
         # update event on data entry text widget
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
+
+        # editor menu frame
+        self.editor_menu = tk.Frame(self.editor)
+        self.editor_menu.grid(row=1, columnspan=2, sticky='EW')
+        # clear text button
+        self.data_entry_clear = tk.Button(self.editor_menu, text="Clear",
+                                          command=self.clear_data_entry)
+        self.data_entry_clear.grid(row=0, column=0, pady=2, sticky='W')
+        # save to CSV button
+        self.save_btn = tk.Button(self.editor_menu, command=self.export_as_csv,
+                                  image=self.save_icon)
+        self.save_btn.image = self.save_icon
+        self.save_btn.grid(row=0, column=1, pady=2, sticky='W')
         
 
         # statistics group frame
@@ -107,7 +111,8 @@ class Application(tk.Frame):
                                                  variable=self.offset_option,
                                                  command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky='W')
-        self.offset_entry = tk.Entry(self.options, width=8, textvariable=self.offset_value)
+        self.offset_entry = tk.Entry(self.options, width=8,
+                                     textvariable=self.offset_value)
         self.offset_entry.grid(row=0, column=1, padx=1, pady=2, sticky='E')
 
         # listbox u.m.
@@ -117,6 +122,10 @@ class Application(tk.Frame):
         self.um_list.insert('end', "mm")
         self.um_list.config(height=2, width=6)
         self.um_list.grid(row=1, column=1, padx=1, pady=2, sticky='E')
+
+        self.grid_columnconfigure(0, weight=1)
+        self.master.resizable(False,False)
+        self.update()
 
     def get_editor_content(self):
         ''' check if the editor is empty or return the content. '''
