@@ -5,16 +5,14 @@ import statistics
 
 class Model:
     ''' Model class of a list of values of float type. With statistics. '''
-    def __init__(self, values=[], separator='-', offset=0):
+    def __init__(self, values=[], offset=0, observable=None):
         try:
+            observable.register_observer(self)
+            # kwargs validation
             if type(values) is type([]):
                 self._values = values
             else:
                 raise TypeError('values must be of type list.')
-            if type(separator) is not type(''):
-                raise TypeError('separator must be of type string.')
-            else:
-                self.separator = separator
             if type(offset) == type(1.0) or type(offset) == type(1):
                 self._offset = float(offset)
             else:
@@ -28,6 +26,13 @@ class Model:
             return float(value)
         except ValueError:
             return None
+
+    def notify(self, observable, *args, **kwargs):
+        #print('Got', args, kwargs, 'From', observable)
+        if 'values' in kwargs:
+            self.values= kwargs['values']
+        if 'offset' in kwargs:
+            self.offset= kwargs['offset']
 
     @property
     def offset(self):
@@ -74,4 +79,4 @@ class Model:
 
     def __str__(self):
         ''' string representation of an interval of min and max values. '''
-        return '%.2f %s %.2f' % (self.min(), self.separator, self.max())
+        return 'model min:%.2f - max:%.2f' % (self.min(), self.max())

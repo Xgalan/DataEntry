@@ -8,8 +8,8 @@ from view import Application
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = tk.Tk()    
     app = Application(master=root)
-    app.model = Model()
+    model = Model(observable=app)
     app.master.title("Data Entry")
     app.mainloop()
