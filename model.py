@@ -28,7 +28,6 @@ class Model:
             return None
 
     def notify(self, observable, *args, **kwargs):
-        #print('Got', args, kwargs, 'From', observable)
         if 'values' in kwargs:
             self.values= kwargs['values']
         if 'offset' in kwargs:
@@ -57,6 +56,9 @@ class Model:
                            someValues]
         else:
             raise TypeError('values must be a list type.')
+
+    def count_values(self):
+        return('Count: ' + str(len(self.values)))
 
     def min(self):
         return min(self.values)

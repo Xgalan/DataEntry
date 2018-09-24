@@ -45,8 +45,11 @@ class Application(tk.Frame):
             return
 
     def update_tkVars(self):
+        self.count_var.set(self.__observers[0].count_values())
         self.min_var.set(self.__observers[0].min())
         self.max_var.set(self.__observers[0].max())
+        self.mean_var.set(round(self.__observers[0].mean(), 2))
+        self.pstdev_var.set(round(self.__observers[0].pstdev(), 2))
         self.min_max_var.set(str(self.min_var.get()) + ' - ' + str(self.max_var.get()))
 
     def offset_cback(self):
@@ -81,7 +84,7 @@ class Application(tk.Frame):
         self.quit.grid(row=0, sticky='E')
 
         # editor
-        self.editor = tk.LabelFrame(self, text='Values', font=("Helvetica", 9, "bold"))
+        self.editor = tk.LabelFrame(self, text='Values', font=("Helvetica", 9))
         self.editor.grid(row=1, padx=4, pady=4, sticky='W')
         self.scrollbar = tk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, pady=1, sticky="NS")
@@ -112,7 +115,7 @@ class Application(tk.Frame):
         self.count_label.grid(row=0, column=2, padx=1)
 
         # statistics group frame
-        self.stats = tk.LabelFrame(self, text="Statistics", font=("Helvetica", 9, "bold"))
+        self.stats = tk.LabelFrame(self, text="Statistics", font=("Helvetica", 9))
         self.stats.grid(row=3, padx=4, pady=4, sticky='EW')
 
         # string preview with copy to clipboard button
@@ -128,19 +131,35 @@ class Application(tk.Frame):
         self.max = tk.Label(self.stats, textvariable=self.max_var,
                             anchor='w', font=("Helvetica", 9))
         self.max.grid(row=1, column=1, padx=2, pady=2, sticky='W')
+        # mean computed from the values of the collection
+        # population standard deviation computed from the values of the collection
+        self.mean_label = tk.Label(self.stats, text='Mean',
+                                   anchor='w', font=("Helvetica", 9, "bold"))
+        self.mean_label.grid(row=2, column=0, padx=2, pady=2, sticky='W')
+        self.pstdev_label = tk.Label(self.stats, text='PopStdDev',
+                                     anchor='w', font=("Helvetica", 9, "bold"))
+        self.pstdev_label.grid(row=2, column=1, padx=2, pady=2, sticky='W')
+        self.mean = tk.Label(self.stats, textvariable=self.mean_var,
+                            anchor='w', font=("Helvetica", 9))
+        self.mean.grid(row=3, column=0, padx=2, pady=2, sticky='W')
+        self.pstdev = tk.Label(self.stats, textvariable=self.pstdev_var,
+                            anchor='w', font=("Helvetica", 9))
+        self.pstdev.grid(row=3, column=1, padx=2, pady=2, sticky='W')
+        
+        # min - max interval of values
         self.preview_label = tk.Label(self.stats, text='Preview',
                                       anchor='w', font=("Helvetica", 9, "bold"))
-        self.preview_label.grid(row=2, padx=2, pady=2, sticky='EW')
+        self.preview_label.grid(row=4, padx=2, pady=2, sticky='EW')
         self.copy_preview = tk.Label(self.stats, textvariable=self.min_max_var, bg='white',
                                      width=16, anchor='w', font=("Helvetica", 9))
-        self.copy_preview.grid(row=3, column=0, padx=2, pady=2, sticky='W')
+        self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky='W')
         self.copy_to_clip_btn = tk.Button(self.stats, command=self.cp_to_clipboard,
                                           image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
-        self.copy_to_clip_btn.grid(row=3, column=1, padx=2, pady=2)
+        self.copy_to_clip_btn.grid(row=5, column=1, padx=2, pady=2)
 
         # options group frame
-        self.options = tk.LabelFrame(self, text="Options", font=("Helvetica", 9, "bold"))
+        self.options = tk.LabelFrame(self, text="Options", font=("Helvetica", 9))
         self.options.grid(row=4, padx=4, pady=4, sticky='EW')
 
         # measure offset - accepts a positive or negative number
@@ -192,6 +211,8 @@ class Application(tk.Frame):
         self.min_var.set(0.0)
         self.max_var.set(0.0)
         self.min_max_var.set(self.min_max_var.default)
+        self.mean_var.set(0.0)
+        self.pstdev_var.set(0.0)
         self.notify_observers(values=[], offset=0.0)
         self.update()
 
