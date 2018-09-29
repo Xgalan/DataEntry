@@ -20,7 +20,6 @@ class Application(tk.Frame):
         self.minimize_icon = tk.PhotoImage(data=icons.minimize_image)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
-        self.offset_value = tk.DoubleVar(0.0)
         self.min_max_var = tk.StringVar(value='- - - - -')
         self.min_max_var.default = '- - - - -'
         self.count_var = tk.StringVar(value='Count: 00')
@@ -28,9 +27,19 @@ class Application(tk.Frame):
         self.max_var = tk.DoubleVar(0.0)
         self.mean_var = tk.DoubleVar(0.0)
         self.pstdev_var = tk.DoubleVar(0.0)
+        # validation callbacks
+        self._validate_num = self.register(self.validate_number)
         # create graphics
         self.grid()
         self.create_widgets()
+
+    def validate_number(self, *args):
+        list_of_num = [str(x) for x in range(10)]
+        list_of_num.append('.')
+        if args[0] in (list_of_num):
+            return True
+        else:
+            return False
 
     def register_observer(self, observer):
         self.__observers.append(observer)
@@ -58,7 +67,7 @@ class Application(tk.Frame):
         try:
             # check if the user has entered an offset value
             if self.offset_option.get() is True:
-                self.notify_observers(offset=self.offset_value.get())
+                self.notify_observers(offset=float(self.offset_entry.get()))
                 self.update_tkVars()
             else:
                 self.notify_observers(offset=0.0)
@@ -173,10 +182,12 @@ class Application(tk.Frame):
                                                  variable=self.offset_option,
                                                  command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky='W')
-        # offset entry
-        #todo: add validation
-        self.offset_entry = tk.Entry(self.options, width=8,
-                                     textvariable=self.offset_value)
+        # offset entry with validation
+        self.offset_entry = tk.Entry(self.options, width=6,
+                                     font=("Helvetica", 9),
+                                     validate='key',
+                                     validatecommand=(self._validate_num,
+                                                      '%S', '%P'))
         self.offset_entry.grid(row=0, column=1, padx=1, pady=2, sticky='E')
         # listbox u.m.
         self.um_list_label = tk.Label(self.options, text='Unit of measurement:')
@@ -218,7 +229,6 @@ class Application(tk.Frame):
         self.data_entry.delete("1.0", 'end-1c')
         self.offset_entry.delete(0, tk.END)
         self.offset_checkbutton.deselect()
-        self.offset_value.set(0.0)
         self.min_var.set(0.0)
         self.max_var.set(0.0)
         self.min_max_var.set(self.min_max_var.default)
