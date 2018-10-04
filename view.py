@@ -36,6 +36,7 @@ class Application(tk.Frame):
     def validate_number(self, *args):
         list_of_num = [str(x) for x in range(10)]
         list_of_num.append('.')
+        list_of_num.append('-')
         if args[0] in (list_of_num):
             return True
         else:
