@@ -42,6 +42,15 @@ class Application(tk.Frame):
         else:
             return False
 
+    def flasher(self, widget, color):
+        ''' Change the background color of a widget for 100ms. '''
+        def change_color(widget, color):
+            widget.config(bg=color)
+
+        orig_color = widget.cget('bg')
+        self.count_label.after(10, change_color, widget, color)
+        self.count_label.after(210, change_color, widget, orig_color)
+
     def register_observer(self, observer):
         self.__observers.append(observer)
 
@@ -58,6 +67,7 @@ class Application(tk.Frame):
 
     def update_tkVars(self):
         self.count_var.set(self.__observers[0].count_values())
+        self.flasher(self.count_label, 'green2')
         self.min_var.set(round(self.__observers[0].min(), 2))
         self.max_var.set(round(self.__observers[0].max(), 2))
         self.mean_var.set(round(self.__observers[0].mean(), 2))
