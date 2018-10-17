@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # coding: utf-8
+
+import string
 import csv
 import tkinter as tk
 from tkinter import messagebox, filedialog
@@ -34,7 +36,7 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def validate_number(self, *args):
-        list_of_num = [str(x) for x in range(10)]
+        list_of_num = string.digits
         list_of_num.append('.')
         list_of_num.append('-')
         if args[0] in (list_of_num):
