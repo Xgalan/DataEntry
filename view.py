@@ -36,7 +36,7 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def validate_number(self, *args):
-        list_of_num = string.digits
+        list_of_num = list(string.digits)
         list_of_num.append('.')
         list_of_num.append('-')
         if args[0] in (list_of_num):
@@ -181,7 +181,7 @@ class Application(tk.Frame):
                                      textvariable=self.min_max_var, bg='white',
                                      bd=1, relief=tk.SUNKEN,
                                      width=16, anchor='w',
-                                     font=("Helvetica", 9))
+                                     font=("Helvetica", 10))
         self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky='W')
         self.copy_to_clip_btn = tk.Button(self.stats,
                                           command=self.cp_to_clipboard,
@@ -198,19 +198,24 @@ class Application(tk.Frame):
                                                  command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky='W')
         # offset entry with validation
+        self.change_sign = tk.Button(self.options, text='+/-',
+                                     font=("Helvetica", 9, "bold"),
+                                     command=self.change_value_sign)
+        self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky='E')
         self.offset_entry = tk.Entry(self.options, width=6,
-                                     font=("Helvetica", 9),
+                                     font=("Helvetica", 10),
                                      validate='key',
                                      validatecommand=(self._validate_num,
                                                       '%S', '%P'))
-        self.offset_entry.grid(row=0, column=1, padx=1, pady=2, sticky='E')
+        self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky='E')
         # listbox u.m.
         self.um_list_label = tk.Label(self.options, text='Unit of measurement:')
-        self.um_list_label.grid(row=1, column=0, pady=2, sticky='NW')
+        self.um_list_label.grid(row=1, column=0, columnspan=2,
+                                pady=2, sticky='NW')
         self.um_list = tk.Listbox(self.options)
         self.um_list.insert('end', "mm")
         self.um_list.config(height=2, width=6)
-        self.um_list.grid(row=1, column=1, padx=1, pady=2, sticky='E')
+        self.um_list.grid(row=1, column=2, padx=1, pady=2, sticky='E')
         # window resizing
         self.grid_columnconfigure(0, weight=1)
         self.master.resizable(False, False)
@@ -225,6 +230,15 @@ class Application(tk.Frame):
             pass
         else:
             return text
+
+    def change_value_sign(self):
+        offset_val = self.offset_entry.get()
+        if offset_val.find('-', 0, 1) != -1:
+            self.offset_entry.delete(0, 1)
+            self.offset_checkbutton.deselect()
+        else:
+            self.offset_entry.insert(0, '-')
+            self.offset_checkbutton.deselect()
 
     def cp_to_clipboard(self):
         '''
