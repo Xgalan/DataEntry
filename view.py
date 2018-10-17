@@ -22,7 +22,7 @@ class Application(tk.Frame):
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - -')
         self.min_max_var.default = '- - - - -'
-        self.count_var = tk.StringVar(value='Count: 00')
+        self.count_var = tk.StringVar(value='Count: 0')
         self.min_var = tk.DoubleVar(0.0)
         self.max_var = tk.DoubleVar(0.0)
         self.mean_var = tk.DoubleVar(0.0)
@@ -135,7 +135,8 @@ class Application(tk.Frame):
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=1, sticky='W')
         # model elements count
-        self.count_label = tk.Label(self.editor_menu, bg='white', width=16,
+        self.count_label = tk.Label(self.editor_menu, bg='white',
+                                    width=16, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
         self.count_label.grid(row=0, column=2, padx=1)
@@ -176,6 +177,7 @@ class Application(tk.Frame):
         self.preview_label.grid(row=4, padx=2, pady=2, sticky='EW')
         self.copy_preview = tk.Label(self.stats,
                                      textvariable=self.min_max_var, bg='white',
+                                     bd=1, relief=tk.SUNKEN,
                                      width=16, anchor='w',
                                      font=("Helvetica", 9))
         self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky='W')
@@ -245,7 +247,7 @@ class Application(tk.Frame):
         self.min_max_var.set(self.min_max_var.default)
         self.mean_var.set(0.0)
         self.pstdev_var.set(0.0)
-        self.count_var.set('Count: 00')
+        self.count_var.set('Count: 0')
         self.notify_observers(values=[], offset=0.0)
         self.update()
 
