@@ -3,18 +3,39 @@
 import statistics
 
 
-class UnitMeasure:
-    ''' Represent the unit of measurement of the model (list of values). '''
-    unit_of_measurement = {
+class UnitRegistry:
+    ''' Represent the units of measurement of the model. '''
+    units_of_measurement = {
+        'um': 'Micrometer',
         'mm': 'Millimeter',
+        'cm': 'Centimeter',
         'm': 'Meter'
         }
-    def __init__(self, um='mm'):
-        if um in unit_of_measurement:
-            self.um = um
-            self.description = unit_of_measurement[um]
+
+    def __init__(self, units='mm'):
+        if units in self.units_of_measurement:
+            self._units = units
+            if isinstance(units, str):
+                self.description = self.units_of_measurement[units]
         else:
             raise TypeError
+
+    def __str__(self):
+        ''' Representation of a unit of measurement. '''
+        return 'Units: %s' % (self.description)
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, name):
+        if isinstance(name, str):
+            if name in self.units_of_measurement:
+                self._units = name
+                self.description = self.units_of_measurement[name]
+        else:
+            raise TypeError('The name of the unit of measurement is invalid.')
 
 
 class Model:
@@ -32,6 +53,8 @@ class Model:
                 self._offset = float(offset)
             else:
                 raise TypeError('offset must be type float or type int.')
+
+            self._units = UnitRegistry()
         except TypeError:
             raise TypeError
             return
@@ -47,6 +70,17 @@ class Model:
             self.values = kwargs['values']
         if 'offset' in kwargs:
             self.offset = kwargs['offset']
+
+    @property
+    def units(self):
+        return self._units
+
+    @units.setter
+    def units(self, name):
+        try:
+            self._units.units = name
+        except:
+            raise TypeError
 
     @property
     def offset(self):
