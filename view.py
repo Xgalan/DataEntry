@@ -340,7 +340,7 @@ class Application(tk.Frame):
         text = self.get_editor_content()
         if text is not None:
             self.clipboard_append(
-                self.min_max_var.get() + self.um_list.get(tk.ACTIVE))
+                self.min_max_var.get() + self.__observers[0].units.units)
         self.update()
 
     def clear_data_entry(self):
