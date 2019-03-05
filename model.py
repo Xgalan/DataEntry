@@ -3,6 +3,20 @@
 import statistics
 
 
+class UnitMeasure:
+    ''' Represent the unit of measurement of the model (list of values). '''
+    unit_of_measurement = {
+        'mm': 'Millimeter',
+        'm': 'Meter'
+        }
+    def __init__(self, um='mm'):
+        if um in unit_of_measurement:
+            self.um = um
+            self.description = unit_of_measurement[um]
+        else:
+            raise TypeError
+
+
 class Model:
     ''' Model class of a list of values of float type. With statistics. '''
     def __init__(self, values=[], offset=0, observable=None):

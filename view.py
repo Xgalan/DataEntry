@@ -9,6 +9,93 @@ from tkinter import messagebox, filedialog
 import icons
 
 
+
+class Dialog(tk.Toplevel):
+    def __init__(self, parent, title = None):
+        tk.Toplevel.__init__(self, parent)
+        self.transient(parent)
+        if title:
+            self.title(title)
+        self.parent = parent
+        self.result = None
+        body = tk.Frame(self)
+        self.initial_focus = self.body(body)
+        body.pack(padx=5, pady=5)
+        self.buttonbox()
+        self.grab_set()
+        if not self.initial_focus:
+            self.initial_focus = self
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
+                                  parent.winfo_rooty()+50))
+        self.initial_focus.focus_set()
+        self.wait_window(self)
+
+    #
+    # construction hooks
+
+    def body(self, master):
+        # create dialog body.  return widget that should have
+        # initial focus.  this method should be overridden
+        pass
+
+    def buttonbox(self):
+        # add standard button box. override if you don't want the
+        # standard buttons
+        box = tk.Frame(self)
+        w = tk.Button(box, text="OK", width=10,
+                      command=self.ok, default=tk.ACTIVE)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
+        w = tk.Button(box, text="Cancel", width=10, command=self.cancel)
+        w.pack(side=tk.LEFT, padx=5, pady=5)
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+        box.pack()
+
+    #
+    # standard button semantics
+
+    def ok(self, event=None):
+        if not self.validate():
+            self.initial_focus.focus_set() # put focus back
+            return
+        self.withdraw()
+        self.update_idletasks()
+        self.apply()
+        self.cancel()
+
+    def cancel(self, event=None):
+        # put focus back to the parent window
+        self.parent.focus_set()
+        self.destroy()
+
+    #
+    # command hooks
+    def validate(self):
+        return 1 # override
+
+    def apply(self):
+        pass # override
+
+
+class UmDialog(Dialog):
+    def body(self, master):
+        tk.Label(master, text="First:").grid(row=0)
+        tk.Label(master, text="Second:").grid(row=1)
+
+        self.e1 = tk.Entry(master)
+        self.e2 = tk.Entry(master)
+
+        self.e1.grid(row=0, column=1)
+        self.e2.grid(row=1, column=1)
+        return self.e1 # initial focus
+
+    def apply(self):
+        first = int(self.e1.get())
+        second = int(self.e2.get())
+        print(first, second) # or something
+
+
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -20,6 +107,7 @@ class Application(tk.Frame):
         self.save_icon = tk.PhotoImage(data=icons.save_image)
         self.delete_icon = tk.PhotoImage(data=icons.delete_image)
         self.minimize_icon = tk.PhotoImage(data=icons.minimize_image)
+        self.options_icon = tk.PhotoImage(data=icons.options_image)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - -')
@@ -96,6 +184,12 @@ class Application(tk.Frame):
             self.notify_observers(values=text.splitlines())
             self.update_tkVars()
 
+    def um_choice(self):
+        ''' Open a dialog with choices for unit of measurement '''
+        self.d = UmDialog(self.master)
+        # save choice of um to a tkVar
+        print(self.d.result)
+
     def create_widgets(self):
         # menu
         self.menu = tk.Frame(self, padx=2, pady=2, bd=1)
@@ -123,7 +217,7 @@ class Application(tk.Frame):
         self.scrollbar.config(command=self.data_entry.yview)
         # editor menu frame
         self.editor_menu = tk.Frame(self.editor)
-        self.editor_menu.grid(row=1, columnspan=2, padx=1, pady=4, sticky='EWS')
+        self.editor_menu.grid(row=1, columnspan=3, padx=1, pady=4, sticky='EWS')
         # clear text button
         self.data_entry_clear = tk.Button(self.editor_menu,
                                           command=self.clear_data_entry,
@@ -136,12 +230,18 @@ class Application(tk.Frame):
                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=1, sticky='W')
+        # unit of measurement choice button
+        self.um_btn = tk.Button(self.editor_menu,
+                                command=self.um_choice,
+                                image=self.options_icon)
+        self.um_btn.image = self.options_icon
+        self.um_btn.grid(row=0, column=2, sticky='W')
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
-                                    width=16, bd=1, relief=tk.SUNKEN,
+                                    width=14, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
-        self.count_label.grid(row=0, column=2, padx=1)
+        self.count_label.grid(row=0, column=3, padx=1)
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
                                    font=("Helvetica", 9))
@@ -208,14 +308,6 @@ class Application(tk.Frame):
                                      validatecommand=(self._validate_num,
                                                       '%S', '%P'))
         self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky='E')
-        # listbox u.m.
-        self.um_list_label = tk.Label(self.options, text='Unit of measurement:')
-        self.um_list_label.grid(row=1, column=0, columnspan=2,
-                                pady=2, sticky='NW')
-        self.um_list = tk.Listbox(self.options)
-        self.um_list.insert('end', "mm")
-        self.um_list.config(height=2, width=6)
-        self.um_list.grid(row=1, column=2, padx=1, pady=2, sticky='E')
         # window resizing
         self.grid_columnconfigure(0, weight=1)
         self.master.resizable(False, False)
