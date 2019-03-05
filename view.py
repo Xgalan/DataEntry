@@ -33,7 +33,6 @@ class Dialog(tk.Toplevel):
 
     #
     # construction hooks
-
     def body(self, master):
         # create dialog body.  return widget that should have
         # initial focus.  this method should be overridden
@@ -54,7 +53,6 @@ class Dialog(tk.Toplevel):
 
     #
     # standard button semantics
-
     def ok(self, event=None):
         if not self.validate():
             self.initial_focus.focus_set() # put focus back
@@ -80,20 +78,19 @@ class Dialog(tk.Toplevel):
 
 class UmDialog(Dialog):
     def body(self, master):
-        tk.Label(master, text="First:").grid(row=0)
-        tk.Label(master, text="Second:").grid(row=1)
-
+        tk.Label(master, text="Units:").grid(row=0)
         self.e1 = tk.Entry(master)
-        self.e2 = tk.Entry(master)
-
         self.e1.grid(row=0, column=1)
-        self.e2.grid(row=1, column=1)
         return self.e1 # initial focus
 
+    def validate(self):
+        if isinstance(self.e1.get(), str):
+            return True
+        else:
+            return False
+
     def apply(self):
-        first = int(self.e1.get())
-        second = int(self.e2.get())
-        print(first, second) # or something
+        self.units = self.e1.get()
 
 
 class Application(tk.Frame):
@@ -188,7 +185,9 @@ class Application(tk.Frame):
         ''' Open a dialog with choices for unit of measurement '''
         self.d = UmDialog(self.master)
         # save choice of um to a tkVar
-        print(self.d.result)
+        if hasattr(self.d, 'units'):
+            self.__observers[0].units = self.d.units
+            print(str(self.__observers[0].units))
 
     def create_widgets(self):
         # menu
@@ -362,6 +361,7 @@ class Application(tk.Frame):
     def export_as_csv(self):
         ''' export as a CSV file the content of the editor. '''
         text = self.get_editor_content()
+        um = self.__observers[0].units.units
         if text is not None:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to CSV file",
@@ -369,5 +369,5 @@ class Application(tk.Frame):
                                                                ("all files", "*.*")))
             with open(filename, 'w', newline='') as csvfile:
                 exported_file = csv.writer(csvfile, dialect='excel')
-                [exported_file.writerow([str(line)]) for line in
+                [exported_file.writerow([str(line), um]) for line in
                  text.splitlines()]
