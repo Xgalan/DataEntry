@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 
 import icons
+import tooltip
 
 
 
@@ -76,7 +77,7 @@ class Dialog(tk.Toplevel):
         pass # override
 
 
-class UmDialog(Dialog):
+class SettingsDialog(Dialog):
     def body(self, master):
         tk.Label(master, text="Units:").grid(row=0)
         self.e1 = tk.Entry(master)
@@ -181,9 +182,9 @@ class Application(tk.Frame):
             self.notify_observers(values=text.splitlines())
             self.update_tkVars()
 
-    def um_choice(self):
+    def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
-        self.d = UmDialog(self.master)
+        self.d = SettingsDialog(self.master)
         # save choice of um to a tkVar
         if hasattr(self.d, 'units'):
             self.__observers[0].units = self.d.units
@@ -203,6 +204,24 @@ class Application(tk.Frame):
                                   command=self.master.wm_iconify)
         self.minimize.image = self.minimize_icon
         self.minimize.grid(row=0, column=1, sticky='E')
+        # save to CSV button
+        self.save_btn = tk.Button(self.menu,
+                                  command=self.export_as_csv,
+                                  image=self.save_icon)
+        self.save_btn.image = self.save_icon
+        self.save_btn.grid(row=0, column=2, sticky='E')
+        # settings button
+        self.settings_btn = tk.Button(self.menu,
+                                command=self.settings_dialog,
+                                image=self.options_icon)
+        self.settings_btn.image = self.options_icon
+        self.settings_btn.grid(row=0, column=3, sticky='E')
+        # tooltips
+        tooltip.Tooltip(self.quit, text='Quit')
+        tooltip.Tooltip(self.minimize, text='Minimize')
+        tooltip.Tooltip(self.save_btn, text='Save to CSV...')
+        tooltip.Tooltip(self.settings_btn, text='Settings...')
+
         # editor
         self.editor = tk.LabelFrame(self, text='Values', font=("Helvetica", 9))
         self.editor.grid(row=1, padx=4, pady=4, sticky='W')
@@ -223,18 +242,7 @@ class Application(tk.Frame):
                                           image=self.delete_icon)
         self.data_entry_clear.image = self.delete_icon
         self.data_entry_clear.grid(row=0, column=0, sticky='W')
-        # save to CSV button
-        self.save_btn = tk.Button(self.editor_menu,
-                                  command=self.export_as_csv,
-                                  image=self.save_icon)
-        self.save_btn.image = self.save_icon
-        self.save_btn.grid(row=0, column=1, sticky='W')
-        # unit of measurement choice button
-        self.um_btn = tk.Button(self.editor_menu,
-                                command=self.um_choice,
-                                image=self.options_icon)
-        self.um_btn.image = self.options_icon
-        self.um_btn.grid(row=0, column=2, sticky='W')
+        tooltip.Tooltip(self.data_entry_clear, text='Clear text')
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
                                     width=14, bd=1, relief=tk.SUNKEN,
