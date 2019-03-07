@@ -15,18 +15,22 @@ import dialog
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
         tk.Label(master, text="Units:").grid(row=0)
+        tk.Label(master, text="Round:").grid(row=1)
         self.e1 = tk.Entry(master)
+        self.e2 = tk.Entry(master)
         self.e1.grid(row=0, column=1)
+        self.e2.grid(row=1, column=1)
         return self.e1 # initial focus
 
     def validate(self):
-        if isinstance(self.e1.get(), str):
+        if isinstance(self.e1.get(), str) and isinstance(int(self.e2.get()), int):
             return True
         else:
             return False
 
     def apply(self):
         self.units = self.e1.get()
+        self.round = self.e2.get()
 
 
 class Application(tk.Frame):
@@ -124,6 +128,8 @@ class Application(tk.Frame):
         if hasattr(self.d, 'units'):
             self.__observers[0].units = self.d.units
             print(str(self.__observers[0].units))
+        if hasattr(self.d, 'round'):
+            print(self.d.round)
 
     def quit_dialog(self):
         if self.data_entry.edit_modified() is 1:
@@ -135,7 +141,7 @@ class Application(tk.Frame):
 
     def create_widgets(self):
         # menu
-        self.menu = tk.Frame(self, padx=2, pady=2, bd=1)
+        self.menu = tk.Frame(self, padx=2, pady=3, bd=1, relief=tk.RAISED)
         self.menu.grid(row=0, sticky='NWE')
         # quit button
         self.quit = tk.Button(self.menu, image=self.quit_icon,
@@ -154,9 +160,8 @@ class Application(tk.Frame):
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=2, sticky='E')
         # settings button
-        self.settings_btn = tk.Button(self.menu,
-                                command=self.settings_dialog,
-                                image=self.options_icon)
+        self.settings_btn = tk.Button(self.menu, command=self.settings_dialog,
+                                      image=self.options_icon)
         self.settings_btn.image = self.options_icon
         self.settings_btn.grid(row=0, column=3, sticky='E')
         # tooltips
@@ -166,8 +171,8 @@ class Application(tk.Frame):
         tooltip.Tooltip(self.settings_btn, text='Settings...')
 
         # editor
-        self.editor = tk.LabelFrame(self, text='Values', font=("Helvetica", 9))
-        self.editor.grid(row=1, padx=4, pady=4, sticky='W')
+        self.editor = tk.Frame(self, bd=1, relief=tk.FLAT)
+        self.editor.grid(row=1, padx=2, pady=2, sticky='EW')
         self.scrollbar = tk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, pady=1, sticky="NS")
         self.data_entry = tk.Text(self.editor, width=24,
@@ -188,10 +193,10 @@ class Application(tk.Frame):
         tooltip.Tooltip(self.data_entry_clear, text='Clear text')
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
-                                    width=14, bd=1, relief=tk.SUNKEN,
+                                    width=16, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
-        self.count_label.grid(row=0, column=3, padx=1)
+        self.count_label.grid(row=0, column=1, padx=3)
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
                                    font=("Helvetica", 9))
