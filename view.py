@@ -320,5 +320,6 @@ class Application(tk.Frame):
                                                                ("all files", "*.*")))
             with open(filename, 'w', newline='') as csvfile:
                 exported_file = csv.writer(csvfile, dialect='excel')
+                exported_file.writerow(['Value', 'Units'])
                 [exported_file.writerow([str(line), um]) for line in
                  text.splitlines()]
