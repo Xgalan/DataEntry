@@ -117,8 +117,9 @@ class Model(Subject):
     @values.setter
     def values(self, some_values):
         if isinstance(some_values, list):
-            self._values = [self._check_and_convert_to_float(v) for v in
-                            some_values]
+            self._values = filter(lambda x: x is not None,
+                                  [self._check_and_convert_to_float(v) for v in
+                                   some_values])
             self.notify()
         else:
             raise TypeError('values must be a list type.')
