@@ -28,19 +28,17 @@ class Subject(object):
 class UnitRegistry:
     ''' Represent the units of measurement of the model. '''
     units_of_measurement = {
-        'um': 'Micrometer',
-        'mm': 'Millimeter',
-        'cm': 'Centimeter',
-        'm': 'Meter'
+        'um': { 'description': 'Micrometer', 'precision': 2 },
+        'mm': { 'description': 'Millimeter', 'precision': 2 },
+        'cm': { 'description': 'Centimeter', 'precision': 2 },
+        'm': { 'description': 'Meter', 'precision': 2 },
         }
 
     def __init__(self, units='mm'):
         if units in self.units_of_measurement:
-            self._units = units
-            if isinstance(units, str):
-                self.description = self.units_of_measurement[units]
+            self.units = units
         else:
-            raise TypeError
+            raise ValueError
 
     def __str__(self):
         ''' Representation of a unit of measurement. '''
@@ -55,7 +53,8 @@ class UnitRegistry:
         if isinstance(value, str):
             if value in self.units_of_measurement:
                 self._units = value
-                self.description = self.units_of_measurement[value]
+                self.description = self.units_of_measurement[value]['description']
+                self.precision = self.units_of_measurement[value]['precision']
         else:
             raise TypeError('The name of the unit of measurement is invalid.')
 

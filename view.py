@@ -15,7 +15,7 @@ import dialog
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
         tk.Label(master, text="Units:").grid(row=0)
-        tk.Label(master, text="Round:").grid(row=1)
+        tk.Label(master, text="Precision:").grid(row=1)
         self.e1 = tk.Entry(master)
         self.e2 = tk.Entry(master)
         self.e1.grid(row=0, column=1)
@@ -30,7 +30,7 @@ class SettingsDialog(dialog.Dialog):
 
     def apply(self):
         self.units = self.e1.get()
-        self.round = self.e2.get()
+        self.precision = self.e2.get()
 
 
 class Application(tk.Frame):
@@ -53,6 +53,8 @@ class Application(tk.Frame):
         self.max_var = tk.DoubleVar(0.0)
         self.mean_var = tk.DoubleVar(0.0)
         self.pstdev_var = tk.DoubleVar(0.0)
+        self.precision = tk.IntVar()
+        self.precision.set(self.model.units.precision)
         # validation callbacks
         self._validate_num = self.register(self.validate_number)
         # create graphics
@@ -96,12 +98,11 @@ class Application(tk.Frame):
         ''' observer pattern '''
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'green2')
-        self.min_var.set(round(subject.min(), 2))
-        self.max_var.set(round(subject.max(), 2))
-        self.mean_var.set(round(subject.mean(), 2))
-        self.pstdev_var.set(round(subject.pstdev(), 2))
+        self.min_var.set(round(subject.min(), subject.units.precision))
+        self.max_var.set(round(subject.max(), subject.units.precision))
+        self.mean_var.set(round(subject.mean(), subject.units.precision))
+        self.pstdev_var.set(round(subject.pstdev(), subject.units.precision))
         self.min_max_var.set(str(self.min_var.get()) + ' - ' + str(self.max_var.get()))
-        print(subject.units)
 
     def offset_cback(self):
         try:
@@ -121,12 +122,11 @@ class Application(tk.Frame):
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
-        self.d = SettingsDialog(self.master)
-        # save choice of units to a tkVar
+        self.d = SettingsDialog(self, title='Settings')
         if hasattr(self.d, 'units'):
             self.model.units = self.d.units
-        if hasattr(self.d, 'round'):
-            print(self.d.round)
+        if hasattr(self.d, 'precision'):
+            self.precision.set(self.d.precision)
 
     def create_widgets(self):
         # menu
@@ -149,7 +149,8 @@ class Application(tk.Frame):
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=2, sticky='E')
         # settings button
-        self.settings_btn = tk.Button(self.menu, command=self.settings_dialog,
+        self.settings_btn = tk.Button(self.menu,
+                                      command=self.settings_dialog,
                                       image=self.options_icon)
         self.settings_btn.image = self.options_icon
         self.settings_btn.grid(row=0, column=3, sticky='E')
@@ -168,7 +169,6 @@ class Application(tk.Frame):
                                   yscrollcommand=self.scrollbar.set)
         self.data_entry.grid(row=0, column=0, sticky='EW')
         # update event on data entry text widget
-        #TODO
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
         # editor menu frame
@@ -231,6 +231,7 @@ class Application(tk.Frame):
                                           image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
         self.copy_to_clip_btn.grid(row=5, column=1, padx=2, pady=2)
+        tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
         # options group frame
         self.options = tk.LabelFrame(self, text="Options",
                                      font=("Helvetica", 9))
@@ -245,6 +246,7 @@ class Application(tk.Frame):
                                      font=("Helvetica", 9, "bold"),
                                      command=self.change_value_sign)
         self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky='E')
+        tooltip.Tooltip(self.change_sign, text='Change offset sign')
         self.offset_entry = tk.Entry(self.options, width=6,
                                      font=("Helvetica", 10),
                                      validate='key',
