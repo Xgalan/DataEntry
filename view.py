@@ -34,10 +34,9 @@ class SettingsDialog(dialog.Dialog):
 
 
 class Application(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, model=None):
         super().__init__(master)
-        # Observable
-        self.__observers = []
+        self.model = model
         # icons
         self.quit_icon = tk.PhotoImage(data=icons.quit_image)
         self.copy_icon = tk.PhotoImage(data=icons.copy_image)
@@ -60,6 +59,14 @@ class Application(tk.Frame):
         self.grid()
         self.create_widgets()
 
+    def quit_dialog(self):
+        if self.data_entry.edit_modified() is 1:
+            answer = messagebox.askokcancel("Quit","Do you want to quit?")
+            if answer:
+                self.master.destroy()
+        else:
+            self.master.destroy()
+
     def validate_number(self, *args):
         list_of_num = list(string.digits)
         list_of_num.append('.')
@@ -78,13 +85,6 @@ class Application(tk.Frame):
         self.count_label.after(10, change_color, widget, color)
         self.count_label.after(210, change_color, widget, orig_color)
 
-    def register_observer(self, observer):
-        self.__observers.append(observer)
-
-    def notify_observers(self, *args, **kwargs):
-        [observer.notify(self, *args, **kwargs) for observer in
-         self.__observers]
-
     def alert(self, **kwargs):
         ''' show an alert message if the editor has no content. '''
         try:
@@ -92,24 +92,24 @@ class Application(tk.Frame):
         except AttributeError:
             return
 
-    def update_tkVars(self):
-        self.count_var.set(self.__observers[0].count_values())
+    def update_values(self, subject):
+        ''' observer pattern '''
+        self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'green2')
-        self.min_var.set(round(self.__observers[0].min(), 2))
-        self.max_var.set(round(self.__observers[0].max(), 2))
-        self.mean_var.set(round(self.__observers[0].mean(), 2))
-        self.pstdev_var.set(round(self.__observers[0].pstdev(), 2))
+        self.min_var.set(round(subject.min(), 2))
+        self.max_var.set(round(subject.max(), 2))
+        self.mean_var.set(round(subject.mean(), 2))
+        self.pstdev_var.set(round(subject.pstdev(), 2))
         self.min_max_var.set(str(self.min_var.get()) + ' - ' + str(self.max_var.get()))
+        print(subject.units)
 
     def offset_cback(self):
         try:
             # check if the user has entered an offset value
             if self.offset_option.get() is True:
-                self.notify_observers(offset=float(self.offset_entry.get()))
-                self.update_tkVars()
+                self.model.offset=float(self.offset_entry.get())
             else:
-                self.notify_observers(offset=0.0)
-                self.update_tkVars()
+                self.model.offset=0.0
             return self.offset_option.get()
         except ValueError:
             return
@@ -117,27 +117,16 @@ class Application(tk.Frame):
     def update_model_values(self, *args):
         text = self.get_editor_content()
         if text is not None:
-            # notify observers
-            self.notify_observers(values=text.splitlines())
-            self.update_tkVars()
+            self.model.values=text.splitlines()
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
         self.d = SettingsDialog(self.master)
-        # save choice of um to a tkVar
+        # save choice of units to a tkVar
         if hasattr(self.d, 'units'):
-            self.__observers[0].units = self.d.units
-            print(str(self.__observers[0].units))
+            self.model.units = self.d.units
         if hasattr(self.d, 'round'):
             print(self.d.round)
-
-    def quit_dialog(self):
-        if self.data_entry.edit_modified() is 1:
-            answer = messagebox.askokcancel("Quit","Do you want to quit?")
-            if answer:
-                self.master.destroy()
-        else:
-            self.master.destroy()
 
     def create_widgets(self):
         # menu
@@ -179,6 +168,7 @@ class Application(tk.Frame):
                                   yscrollcommand=self.scrollbar.set)
         self.data_entry.grid(row=0, column=0, sticky='EW')
         # update event on data entry text widget
+        #TODO
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
         # editor menu frame
@@ -214,8 +204,6 @@ class Application(tk.Frame):
         self.max = tk.Label(self.stats, textvariable=self.max_var,
                             anchor='w', font=("Helvetica", 9))
         self.max.grid(row=1, column=1, padx=2, pady=2, sticky='W')
-        # mean computed from the values of the collection
-        # population stddev computed from the values of the collection
         self.mean_label = tk.Label(self.stats, text='Mean',
                                    anchor='w', font=("Helvetica", 9, "bold"))
         self.mean_label.grid(row=2, column=0, padx=2, pady=2, sticky='W')
@@ -295,7 +283,7 @@ class Application(tk.Frame):
         text = self.get_editor_content()
         if text is not None:
             self.clipboard_append(
-                self.min_max_var.get() + self.__observers[0].units.units)
+                self.min_max_var.get() + self.model.units.units)
         self.update()
 
     def clear_data_entry(self):
@@ -311,13 +299,14 @@ class Application(tk.Frame):
         self.mean_var.set(0.0)
         self.pstdev_var.set(0.0)
         self.count_var.set('Count: 0')
-        self.notify_observers(values=[], offset=0.0)
         self.update()
+        self.model.values = []
+        self.model.offset = 0.0
 
     def export_as_csv(self):
         ''' export as a CSV file the content of the editor. '''
         text = self.get_editor_content()
-        um = self.__observers[0].units.units
+        um = self.model.units
         if text is not None:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to CSV file",

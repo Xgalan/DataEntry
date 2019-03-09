@@ -1,6 +1,28 @@
 #!/usr/bin/env python3
 # coding: utf-8
+
 import statistics
+
+
+
+class Subject(object):
+    def __init__(self):
+        self._observers = []
+
+    def attach(self, observer):
+        if observer not in self._observers:
+            self._observers.append(observer)
+
+    def detach(self, observer):
+        try:
+            self._observers.remove(observer)
+        except ValueError:
+            pass
+
+    def notify(self, modifier=None):
+        for observer in self._observers:
+            if modifier != observer:
+                observer.update_values(self)
 
 
 class UnitRegistry:
@@ -29,22 +51,21 @@ class UnitRegistry:
         return self._units
 
     @units.setter
-    def units(self, name):
-        if isinstance(name, str):
-            if name in self.units_of_measurement:
-                self._units = name
-                self.description = self.units_of_measurement[name]
+    def units(self, value):
+        if isinstance(value, str):
+            if value in self.units_of_measurement:
+                self._units = value
+                self.description = self.units_of_measurement[value]
         else:
             raise TypeError('The name of the unit of measurement is invalid.')
 
 
-class Model:
+class Model(Subject):
     ''' Model class of a list of values of float type. With statistics. '''
-    def __init__(self, values=[], offset=0, observable=None):
+    def __init__(self, values=[], offset=0):
+        Subject.__init__(self)
+        self._units = UnitRegistry()
         try:
-            if observable is not None:
-                observable.register_observer(self)
-            # kwargs validation
             if isinstance(values, list):
                 self._values = values
             else:
@@ -53,23 +74,14 @@ class Model:
                 self._offset = float(offset)
             else:
                 raise TypeError('offset must be type float or type int.')
-
-            self._units = UnitRegistry()
         except TypeError:
             raise TypeError
-            return
 
     def _check_and_convert_to_float(self, value):
         try:
             return float(value)
         except ValueError:
             return None
-
-    def notify(self, observable, *args, **kwargs):
-        if 'values' in kwargs:
-            self.values = kwargs['values']
-        if 'offset' in kwargs:
-            self.offset = kwargs['offset']
 
     @property
     def units(self):
@@ -78,7 +90,9 @@ class Model:
     @units.setter
     def units(self, name):
         try:
+            print(self._units)
             self._units.units = name
+            self.notify()
         except:
             raise TypeError
 
@@ -87,9 +101,10 @@ class Model:
         return self._offset
 
     @offset.setter
-    def offset(self, aOffset):
-        if isinstance(aOffset, (float, int)):
-            self._offset = float(aOffset)
+    def offset(self, offset):
+        if isinstance(offset, (float, int)):
+            self._offset = float(offset)
+            self.notify()
         else:
             raise TypeError('offset must be a float type or an int type.')
 
@@ -101,27 +116,40 @@ class Model:
             )]
 
     @values.setter
-    def values(self, someValues):
-        if isinstance(someValues, list):
+    def values(self, some_values):
+        if isinstance(some_values, list):
             self._values = [self._check_and_convert_to_float(v) for v in
-                            someValues]
+                            some_values]
+            self.notify()
         else:
             raise TypeError('values must be a list type.')
 
     def count_values(self):
-        return('Count: ' + str(len(self.values)))
+        return 'Count: ' + str(len(self.values))
 
     def min(self):
-        return min(self.values)
+        if self.values:
+            return min(self.values)
+        else:
+            return 0
 
     def max(self):
-        return max(self.values)
+        if self.values:
+            return max(self.values)
+        else:
+            return 0
 
     def mean(self):
-        return statistics.mean(self.values)
+        if self.values:
+            return statistics.mean(self.values)
+        else:
+            return 0
 
     def pstdev(self):
-        return statistics.pstdev(self.values)
+        if self.values:
+            return statistics.pstdev(self.values)
+        else:
+            return 0
 
     def __repr__(self):
         return "{__class__.__name__}(values=[{_values_str}], offset={_offset_str})".format(
