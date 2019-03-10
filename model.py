@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import statistics
 
@@ -35,13 +35,9 @@ class UnitRegistry:
         }
 
     def __init__(self, units='mm'):
-        if units in self.units_of_measurement:
-            self.units = units
-        else:
-            raise ValueError
+        self.units = units
 
     def __str__(self):
-        ''' Representation of a unit of measurement. '''
         return 'Units: %s' % (self.description)
 
     @property
@@ -56,7 +52,15 @@ class UnitRegistry:
                 self.description = self.units_of_measurement[value]['description']
                 self.precision = self.units_of_measurement[value]['precision']
         else:
-            raise TypeError('The name of the unit of measurement is invalid.')
+            raise ValueError('The name of the unit of measurement is invalid.')
+
+    def __repr__(self):
+        return "{__class__.__name__}(units={_units_str}, description={_description_str}, precision={_precision_str})".format(
+            __class__=self.__class__,
+            _units_str=self.units,
+            _description_str=self.description,
+            _precision_str=str(self.precision),
+            **self.__dict__)
 
 
 class Model(Subject):
