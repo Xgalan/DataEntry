@@ -76,7 +76,7 @@ class Model(Subject):
         except TypeError:
             raise TypeError
 
-    def _check_and_convert_to_float(self, value):
+    def _convert_to_float(self, value):
         try:
             return float(value)
         except ValueError:
@@ -89,7 +89,6 @@ class Model(Subject):
     @units.setter
     def units(self, name):
         try:
-            print(self._units)
             self._units.units = name
             self.notify()
         except:
@@ -110,16 +109,20 @@ class Model(Subject):
     @property
     def values(self):
         return [float_value for float_value in filter(
-            lambda x: x is not None, [self._check_and_convert_to_float(v) for v in
-                                      map(lambda x: x + self.offset, self._values)]
+            None, [self._convert_to_float(v) for v in map(
+                lambda x: x + self.offset, self._values)]
             )]
+
+    @property
+    def values(self):
+        return [v for v in map(lambda x: x + self.offset, self._values)]
 
     @values.setter
     def values(self, some_values):
         if isinstance(some_values, list):
-            self._values = filter(lambda x: x is not None,
-                                  [self._check_and_convert_to_float(v) for v in
-                                   some_values])
+            self._values = [f for f in filter(None, [
+                self._convert_to_float(v) for v in some_values])
+                            ]
             self.notify()
         else:
             raise TypeError('values must be a list type.')
@@ -131,25 +134,25 @@ class Model(Subject):
         if self.values:
             return min(self.values)
         else:
-            return 0
+            return 0.0
 
     def max(self):
         if self.values:
             return max(self.values)
         else:
-            return 0
+            return 0.0
 
     def mean(self):
         if self.values:
             return statistics.mean(self.values)
         else:
-            return 0
+            return 0.0
 
     def pstdev(self):
         if self.values:
             return statistics.pstdev(self.values)
         else:
-            return 0
+            return 0.0
 
     def __repr__(self):
         return "{__class__.__name__}(values=[{_values_str}], offset={_offset_str})".format(

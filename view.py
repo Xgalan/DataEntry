@@ -118,7 +118,7 @@ class Application(tk.Frame):
     def update_model_values(self, *args):
         text = self.get_editor_content()
         if text is not None:
-            self.model.values=text.splitlines()
+            self.model.values = text.splitlines()
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
@@ -308,7 +308,7 @@ class Application(tk.Frame):
     def export_as_csv(self):
         ''' export as a CSV file the content of the editor. '''
         text = self.get_editor_content()
-        um = self.model.units
+        um = self.model.units.description
         if text is not None:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to CSV file",
