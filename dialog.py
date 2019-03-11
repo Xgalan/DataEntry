@@ -5,13 +5,13 @@ import tkinter as tk
 
 
 class Dialog(tk.Toplevel):
-    def __init__(self, parent, title = None):
+    def __init__(self, parent, title=None, defaults=None):
         tk.Toplevel.__init__(self, parent)
         self.transient(parent)
         if title:
             self.title(title)
         self.parent = parent
-        self.result = None
+        self.defaults = defaults
         body = tk.Frame(self)
         self.initial_focus = self.body(body)
         body.pack(padx=5, pady=5)

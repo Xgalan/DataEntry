@@ -16,10 +16,17 @@ class SettingsDialog(dialog.Dialog):
     def body(self, master):
         tk.Label(master, text="Units:").grid(row=0)
         tk.Label(master, text="Precision:").grid(row=1)
-        self.e1 = tk.Entry(master)
-        self.e2 = tk.Entry(master)
+        tk.Label(master, text="Min warning:").grid(row=2)
+        tk.Label(master, text="Max warning:").grid(row=3)
+        [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
+        self.e1.insert(0, self.defaults['units'])
+        self.e2.insert(0, self.defaults['precision'])
+        self.e3.insert(0, self.defaults['min_warning'])
+        self.e4.insert(0, self.defaults['max_warning'])
         self.e1.grid(row=0, column=1)
         self.e2.grid(row=1, column=1)
+        self.e3.grid(row=2, column=1)
+        self.e4.grid(row=3, column=1)
         return self.e1 # initial focus
 
     def validate(self):
@@ -31,6 +38,8 @@ class SettingsDialog(dialog.Dialog):
     def apply(self):
         self.units = self.e1.get()
         self.precision = self.e2.get()
+        self.min_warning = self.e3.get()
+        self.max_warning = self.e4.get()
 
 
 class Application(tk.Frame):
@@ -55,6 +64,8 @@ class Application(tk.Frame):
         self.pstdev_var = tk.DoubleVar(0.0)
         self.precision = tk.IntVar()
         self.precision.set(self.model.units.precision)
+        self.min_warning = tk.DoubleVar(0.0)
+        self.max_warning = tk.DoubleVar(0.0)
         # validation callbacks
         self._validate_num = self.register(self.validate_number)
         # create graphics
@@ -122,11 +133,21 @@ class Application(tk.Frame):
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
-        self.d = SettingsDialog(self, title='Settings')
+        defaults = {
+            'units': self.model.units,
+            'precision': self.precision.get(),
+            'min_warning': self.min_warning.get(),
+            'max_warning': self.max_warning.get(),
+            }
+        self.d = SettingsDialog(self, title='Settings', defaults=defaults)
         if hasattr(self.d, 'units'):
             self.model.units = self.d.units
         if hasattr(self.d, 'precision'):
             self.precision.set(self.d.precision)
+        if hasattr(self.d, 'min_warning'):
+            self.min_warning.set(self.d.min_warning)
+        if hasattr(self.d, 'max_warning'):
+            self.max_warning.set(self.d.max_warning)
 
     def create_widgets(self):
         # menu
