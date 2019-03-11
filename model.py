@@ -112,14 +112,7 @@ class Model(Subject):
 
     @property
     def values(self):
-        return [float_value for float_value in filter(
-            None, [self._convert_to_float(v) for v in map(
-                lambda x: x + self.offset, self._values)]
-            )]
-
-    @property
-    def values(self):
-        return [v for v in map(lambda x: x + self.offset, self._values)]
+        return [v for v in map(lambda x: x + self.offset, self._values)]         
 
     @values.setter
     def values(self, some_values):
