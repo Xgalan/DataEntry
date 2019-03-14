@@ -56,6 +56,9 @@ class Application(tk.Frame):
         self.delete_icon = tk.PhotoImage(data=icons.delete_image)
         self.minimize_icon = tk.PhotoImage(data=icons.minimize_image)
         self.options_icon = tk.PhotoImage(data=icons.options_image)
+        self.green_icon = tk.PhotoImage(data=icons.green_led)
+        self.neutral_icon = tk.PhotoImage(data=icons.neutral_led)
+        self.yellow_icon = tk.PhotoImage(data=icons.yellow_led)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - -')
@@ -131,8 +134,17 @@ class Application(tk.Frame):
 
     def update_model_values(self, *args):
         text = self.get_editor_content()
+        minwn = self.min_warning.get()
+        maxwn = self.max_warning.get()
         if text is not None:
             self.model.values = text.splitlines()
+            lastv = self.model.values[-1]
+            if lastv >= minwn and lastv <= maxwn:
+                self.warning_label.configure(image=self.green_icon)
+                self.warning_label.image = self.green_icon
+            else:
+                self.warning_label.configure(image=self.yellow_icon)
+                self.warning_label.image = self.yellow_icon
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
@@ -160,68 +172,79 @@ class Application(tk.Frame):
         self.quit = tk.Button(self.menu, image=self.quit_icon,
                               command=self.quit_dialog)
         self.quit.image = self.quit_icon
-        self.quit.grid(row=0, column=0, sticky=tk.E)
+        self.quit.grid(row=0, column=5, sticky=tk.E)
         # minimize to tray button
         self.minimize = tk.Button(self.menu, image=self.minimize_icon,
                                   command=self.master.wm_iconify)
         self.minimize.image = self.minimize_icon
-        self.minimize.grid(row=0, column=1, sticky=tk.E)
+        self.minimize.grid(row=0, column=4, sticky=tk.E)
+        # copy to clipboard
+        self.copy_to_clip_btn = tk.Button(self.menu,
+                                          command=self.cp_to_clipboard,
+                                          image=self.copy_icon)
+        self.copy_to_clip_btn.image = self.copy_icon
+        self.copy_to_clip_btn.grid(row=0, column=0)
         # save to CSV button
         self.save_btn = tk.Button(self.menu,
                                   command=self.export_as_csv,
                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
-        self.save_btn.grid(row=0, column=2, sticky=tk.E)
+        self.save_btn.grid(row=0, column=1, sticky=tk.E)
         # settings button
         self.settings_btn = tk.Button(self.menu,
                                       command=self.settings_dialog,
                                       image=self.options_icon)
         self.settings_btn.image = self.options_icon
         self.settings_btn.grid(row=0, column=3, sticky=tk.E)
+        # reset data entry button
+        self.data_entry_clear = tk.Button(self.menu,
+                                          command=self.clear_data_entry,
+                                          image=self.delete_icon)
+        self.data_entry_clear.image = self.delete_icon
+        self.data_entry_clear.grid(row=0, column=2, sticky=tk.E)
+        
         # tooltips
         tooltip.Tooltip(self.quit, text='Quit')
         tooltip.Tooltip(self.minimize, text='Minimize')
         tooltip.Tooltip(self.save_btn, text='Save to CSV...')
         tooltip.Tooltip(self.settings_btn, text='Settings...')
-
+        tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
+        tooltip.Tooltip(self.data_entry_clear, text='Reset')
         # editor
         self.editor = tk.Frame(self, bd=1, relief=tk.FLAT)
-        self.editor.grid(row=1, padx=2, pady=2, sticky='EW')
+        self.editor.grid(row=1, padx=2, pady=2, sticky=tk.W+tk.E)
         self.scrollbar = tk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, pady=1, sticky="NS")
-        self.data_entry = tk.Text(self.editor, width=24,
+        self.data_entry = tk.Text(self.editor, width=22,
                                   yscrollcommand=self.scrollbar.set)
-        self.data_entry.grid(row=0, column=0, sticky='EW')
+        self.data_entry.grid(row=0, column=0, sticky=tk.W+tk.E)
         # update event on data entry text widget
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
         # editor menu frame
         self.editor_menu = tk.Frame(self.editor)
-        self.editor_menu.grid(row=1, columnspan=3, padx=1, pady=4, sticky='EWS')
-        # clear text button
-        self.data_entry_clear = tk.Button(self.editor_menu,
-                                          command=self.clear_data_entry,
-                                          image=self.delete_icon)
-        self.data_entry_clear.image = self.delete_icon
-        self.data_entry_clear.grid(row=0, column=0, sticky=tk.W)
-        tooltip.Tooltip(self.data_entry_clear, text='Clear text')
+        self.editor_menu.grid(row=1, columnspan=3, pady=2, sticky=tk.W+tk.E)
+        
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
                                     width=16, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
-        self.count_label.grid(row=0, column=1, padx=3)
+        self.count_label.grid(row=0, column=0, padx=3)
+
+        self.warning_label = tk.Label(self.editor_menu,
+                                      image=self.neutral_icon)
+        self.warning_label.grid(row=0, column=2, padx=2)
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
                                    font=("Helvetica", 9))
-        self.stats.grid(row=3, padx=4, pady=4, sticky='EW')
-        # string preview with copy to clipboard button
+        self.stats.grid(row=3, padx=4, pady=3, sticky=tk.W+tk.E)
         self.min_label = tk.Label(self.stats, text='Min value',
                                   anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.min_label.grid(row=0, column=0, padx=2, pady=2, sticky='W')
+        self.min_label.grid(row=0, column=0, padx=2, pady=2, sticky=tk.W)
         self.max_label = tk.Label(self.stats, text='Max value',
                                   anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.max_label.grid(row=0, column=1, padx=2, pady=2, sticky='W')
+        self.max_label.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
         self.min = tk.Label(self.stats, textvariable=self.min_var,
                             anchor=tk.W, font=("Helvetica", 9))
         self.min.grid(row=1, column=0, padx=2, pady=2, sticky=tk.W)
@@ -243,23 +266,20 @@ class Application(tk.Frame):
         # min - max interval of values
         self.preview_label = tk.Label(self.stats, text='Preview',
                                       anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.preview_label.grid(row=4, padx=2, pady=2, sticky='EW')
+        self.preview_label.grid(row=4, padx=2, pady=2, columnspan=2,
+                                sticky=tk.W+tk.E)
         self.copy_preview = tk.Label(self.stats,
                                      textvariable=self.min_max_var, bg='white',
                                      bd=1, relief=tk.SUNKEN,
-                                     width=16, anchor=tk.W,
+                                     anchor=tk.W,
                                      font=("Helvetica", 10))
-        self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky=tk.W)
-        self.copy_to_clip_btn = tk.Button(self.stats,
-                                          command=self.cp_to_clipboard,
-                                          image=self.copy_icon)
-        self.copy_to_clip_btn.image = self.copy_icon
-        self.copy_to_clip_btn.grid(row=5, column=1, padx=2, pady=2)
-        tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
+        self.copy_preview.grid(row=5, columnspan=2, padx=4, pady=2,
+                               sticky=tk.W+tk.E)
+
         # options group frame
         self.options = tk.LabelFrame(self, text="Options",
                                      font=("Helvetica", 9))
-        self.options.grid(row=4, padx=4, pady=4, sticky='EW')
+        self.options.grid(row=4, padx=4, pady=4, sticky=tk.W+tk.E)
         # measure offset - accepts a positive or negative number
         self.offset_checkbutton = tk.Checkbutton(self.options, text='Offset',
                                                  variable=self.offset_option,
@@ -271,7 +291,7 @@ class Application(tk.Frame):
                                      command=self.change_value_sign)
         self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky=tk.E)
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
-        self.offset_entry = tk.Entry(self.options, width=6,
+        self.offset_entry = tk.Entry(self.options, width=8,
                                      font=("Helvetica", 10),
                                      validate='key',
                                      validatecommand=(self._validate_num,
@@ -325,6 +345,8 @@ class Application(tk.Frame):
         self.mean_var.set(0.0)
         self.pstdev_var.set(0.0)
         self.count_var.set('Count: 0')
+        self.warning_label.configure(image=self.neutral_icon)
+        self.warning_label.image = self.neutral_icon
         self.update()
         self.model.values = []
         self.model.offset = 0.0
