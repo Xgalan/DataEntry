@@ -14,10 +14,13 @@ import dialog
 
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
-        tk.Label(master, text="Units:").grid(row=0)
-        tk.Label(master, text="Precision:").grid(row=1)
-        tk.Label(master, text="Min warning:").grid(row=2)
-        tk.Label(master, text="Max warning:").grid(row=3)
+        tk.Label(master, anchor=tk.W, text='Units:').grid(row=0, sticky=tk.W)
+        tk.Label(master, anchor=tk.W, text='Precision:').grid(row=1,
+                                                              sticky=tk.W)
+        tk.Label(master, anchor=tk.W, text='Min. warning:').grid(row=2,
+                                                                 sticky=tk.W)
+        tk.Label(master, anchor=tk.W, text='Max warning:').grid(row=3,
+                                                                sticky=tk.W)
         [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
         self.e1.insert(0, self.defaults['units'])
         self.e2.insert(0, self.defaults['precision'])
@@ -108,7 +111,7 @@ class Application(tk.Frame):
     def update_values(self, subject):
         ''' observer pattern '''
         self.count_var.set(subject.count_values())
-        self.flasher(self.count_label, 'green2')
+        self.flasher(self.count_label, 'snow2')
         self.min_var.set(round(subject.min(), subject.units.precision))
         self.max_var.set(round(subject.max(), subject.units.precision))
         self.mean_var.set(round(subject.mean(), subject.units.precision))
@@ -157,24 +160,24 @@ class Application(tk.Frame):
         self.quit = tk.Button(self.menu, image=self.quit_icon,
                               command=self.quit_dialog)
         self.quit.image = self.quit_icon
-        self.quit.grid(row=0, column=0, sticky='E')
+        self.quit.grid(row=0, column=0, sticky=tk.E)
         # minimize to tray button
         self.minimize = tk.Button(self.menu, image=self.minimize_icon,
                                   command=self.master.wm_iconify)
         self.minimize.image = self.minimize_icon
-        self.minimize.grid(row=0, column=1, sticky='E')
+        self.minimize.grid(row=0, column=1, sticky=tk.E)
         # save to CSV button
         self.save_btn = tk.Button(self.menu,
                                   command=self.export_as_csv,
                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
-        self.save_btn.grid(row=0, column=2, sticky='E')
+        self.save_btn.grid(row=0, column=2, sticky=tk.E)
         # settings button
         self.settings_btn = tk.Button(self.menu,
                                       command=self.settings_dialog,
                                       image=self.options_icon)
         self.settings_btn.image = self.options_icon
-        self.settings_btn.grid(row=0, column=3, sticky='E')
+        self.settings_btn.grid(row=0, column=3, sticky=tk.E)
         # tooltips
         tooltip.Tooltip(self.quit, text='Quit')
         tooltip.Tooltip(self.minimize, text='Minimize')
@@ -200,7 +203,7 @@ class Application(tk.Frame):
                                           command=self.clear_data_entry,
                                           image=self.delete_icon)
         self.data_entry_clear.image = self.delete_icon
-        self.data_entry_clear.grid(row=0, column=0, sticky='W')
+        self.data_entry_clear.grid(row=0, column=0, sticky=tk.W)
         tooltip.Tooltip(self.data_entry_clear, text='Clear text')
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
@@ -214,39 +217,39 @@ class Application(tk.Frame):
         self.stats.grid(row=3, padx=4, pady=4, sticky='EW')
         # string preview with copy to clipboard button
         self.min_label = tk.Label(self.stats, text='Min value',
-                                  anchor='w', font=("Helvetica", 9, "bold"))
+                                  anchor=tk.W, font=("Helvetica", 9, "bold"))
         self.min_label.grid(row=0, column=0, padx=2, pady=2, sticky='W')
         self.max_label = tk.Label(self.stats, text='Max value',
-                                  anchor='w', font=("Helvetica", 9, "bold"))
+                                  anchor=tk.W, font=("Helvetica", 9, "bold"))
         self.max_label.grid(row=0, column=1, padx=2, pady=2, sticky='W')
         self.min = tk.Label(self.stats, textvariable=self.min_var,
-                            anchor='w', font=("Helvetica", 9))
-        self.min.grid(row=1, column=0, padx=2, pady=2, sticky='W')
+                            anchor=tk.W, font=("Helvetica", 9))
+        self.min.grid(row=1, column=0, padx=2, pady=2, sticky=tk.W)
         self.max = tk.Label(self.stats, textvariable=self.max_var,
-                            anchor='w', font=("Helvetica", 9))
-        self.max.grid(row=1, column=1, padx=2, pady=2, sticky='W')
+                            anchor=tk.W, font=("Helvetica", 9))
+        self.max.grid(row=1, column=1, padx=2, pady=2, sticky=tk.W)
         self.mean_label = tk.Label(self.stats, text='Mean',
-                                   anchor='w', font=("Helvetica", 9, "bold"))
-        self.mean_label.grid(row=2, column=0, padx=2, pady=2, sticky='W')
+                                   anchor=tk.W, font=("Helvetica", 9, "bold"))
+        self.mean_label.grid(row=2, column=0, padx=2, pady=2, sticky=tk.W)
         self.pstdev_label = tk.Label(self.stats, text='PopStdDev',
-                                     anchor='w', font=("Helvetica", 9, "bold"))
-        self.pstdev_label.grid(row=2, column=1, padx=2, pady=2, sticky='W')
+                                     anchor=tk.W, font=("Helvetica", 9, "bold"))
+        self.pstdev_label.grid(row=2, column=1, padx=2, pady=2, sticky=tk.W)
         self.mean = tk.Label(self.stats, textvariable=self.mean_var,
-                             anchor='w', font=("Helvetica", 9))
-        self.mean.grid(row=3, column=0, padx=2, pady=2, sticky='W')
+                             anchor=tk.W, font=("Helvetica", 9))
+        self.mean.grid(row=3, column=0, padx=2, pady=2, sticky=tk.W)
         self.pstdev = tk.Label(self.stats, textvariable=self.pstdev_var,
-                               anchor='w', font=("Helvetica", 9))
-        self.pstdev.grid(row=3, column=1, padx=2, pady=2, sticky='W')
+                               anchor=tk.W, font=("Helvetica", 9))
+        self.pstdev.grid(row=3, column=1, padx=2, pady=2, sticky=tk.W)
         # min - max interval of values
         self.preview_label = tk.Label(self.stats, text='Preview',
-                                      anchor='w', font=("Helvetica", 9, "bold"))
+                                      anchor=tk.W, font=("Helvetica", 9, "bold"))
         self.preview_label.grid(row=4, padx=2, pady=2, sticky='EW')
         self.copy_preview = tk.Label(self.stats,
                                      textvariable=self.min_max_var, bg='white',
                                      bd=1, relief=tk.SUNKEN,
-                                     width=16, anchor='w',
+                                     width=16, anchor=tk.W,
                                      font=("Helvetica", 10))
-        self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky='W')
+        self.copy_preview.grid(row=5, column=0, padx=2, pady=2, sticky=tk.W)
         self.copy_to_clip_btn = tk.Button(self.stats,
                                           command=self.cp_to_clipboard,
                                           image=self.copy_icon)
@@ -261,19 +264,19 @@ class Application(tk.Frame):
         self.offset_checkbutton = tk.Checkbutton(self.options, text='Offset',
                                                  variable=self.offset_option,
                                                  command=self.offset_cback)
-        self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky='W')
+        self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky=tk.W)
         # offset entry with validation
         self.change_sign = tk.Button(self.options, text='+/-',
                                      font=("Helvetica", 9, "bold"),
                                      command=self.change_value_sign)
-        self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky='E')
+        self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky=tk.E)
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
         self.offset_entry = tk.Entry(self.options, width=6,
                                      font=("Helvetica", 10),
                                      validate='key',
                                      validatecommand=(self._validate_num,
                                                       '%S', '%P'))
-        self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky='E')
+        self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky=tk.E)
         # window resizing
         self.grid_columnconfigure(0, weight=1)
         self.master.resizable(False, False)
