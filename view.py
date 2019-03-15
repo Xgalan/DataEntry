@@ -72,6 +72,7 @@ class Application(tk.Frame):
         self.precision.set(self.model.units.precision)
         self.min_warning = tk.DoubleVar(0.0)
         self.max_warning = tk.DoubleVar(0.0)
+        self.last_value = tk.StringVar(value='- - - - - -')
         # validation callbacks
         self._validate_num = self.register(self.validate_number)
         # create graphics
@@ -120,6 +121,11 @@ class Application(tk.Frame):
         self.mean_var.set(round(subject.mean(), subject.units.precision))
         self.pstdev_var.set(round(subject.pstdev(), subject.units.precision))
         self.min_max_var.set(str(self.min_var.get()) + ' - ' + str(self.max_var.get()))
+        try:
+            last_val = subject.values[-1]
+            self.last_value.set(str(last_val) + subject.units.units)
+        except IndexError:
+            self.last_value.set('No valid value')
 
     def offset_cback(self):
         try:
@@ -134,12 +140,10 @@ class Application(tk.Frame):
 
     def update_model_values(self, *args):
         text = self.get_editor_content()
-        minwn = self.min_warning.get()
-        maxwn = self.max_warning.get()
         if text is not None:
             self.model.values = text.splitlines()
             lastv = self.model.values[-1]
-            if lastv >= minwn and lastv <= maxwn:
+            if lastv >= self.min_warning.get() and lastv <= self.max_warning.get():
                 self.warning_label.configure(image=self.green_icon)
                 self.warning_label.image = self.green_icon
             else:
@@ -297,6 +301,11 @@ class Application(tk.Frame):
                                      validatecommand=(self._validate_num,
                                                       '%S', '%P'))
         self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky=tk.E)
+        self.last_value_with_offset = tk.Label(self.options, bg='white',
+                                    width=12, bd=1, relief=tk.SUNKEN,
+                                    font=("Helvetica", 10, "bold"),
+                                    textvariable=self.last_value)
+        self.last_value_with_offset.grid(row=1)
         # window resizing
         self.grid_columnconfigure(0, weight=1)
         self.master.resizable(False, False)
@@ -339,17 +348,13 @@ class Application(tk.Frame):
         self.data_entry.delete("1.0", 'end-1c')
         self.offset_entry.delete(0, tk.END)
         self.offset_checkbutton.deselect()
-        self.min_var.set(0.0)
-        self.max_var.set(0.0)
         self.min_max_var.set(self.min_max_var.default)
-        self.mean_var.set(0.0)
-        self.pstdev_var.set(0.0)
         self.count_var.set('Count: 0')
         self.warning_label.configure(image=self.neutral_icon)
         self.warning_label.image = self.neutral_icon
-        self.update()
         self.model.values = []
         self.model.offset = 0.0
+        self.update()
 
     def export_as_csv(self):
         ''' export as a CSV file the content of the editor. '''

@@ -105,14 +105,14 @@ class Model(Subject):
     @offset.setter
     def offset(self, offset):
         if isinstance(offset, (float, int)):
-            self._offset = float(offset)
+            self._offset = self._convert_to_float(offset)
             self.notify()
         else:
             raise TypeError('offset must be a float type or an int type.')
 
     @property
     def values(self):
-        return [v for v in map(lambda x: x + self.offset, self._values)]         
+        return [v for v in map(lambda x: x + self.offset, self._values)]
 
     @values.setter
     def values(self, some_values):
