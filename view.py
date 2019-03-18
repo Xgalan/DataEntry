@@ -64,8 +64,6 @@ class Application(tk.Frame):
         self.min_max_var = tk.StringVar(value='- - - - -')
         self.min_max_var.default = '- - - - -'
         self.count_var = tk.StringVar(value='Count: 0')
-        self.min_var = tk.DoubleVar(0.0)
-        self.max_var = tk.DoubleVar(0.0)
         self.mean_var = tk.DoubleVar(0.0)
         self.pstdev_var = tk.DoubleVar(0.0)
         self.precision = tk.IntVar()
@@ -114,16 +112,18 @@ class Application(tk.Frame):
 
     def update_values(self, subject):
         ''' observer pattern '''
+        precision = subject.units.precision
+        units = subject.units.units
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
-        self.min_var.set(round(subject.min(), subject.units.precision))
-        self.max_var.set(round(subject.max(), subject.units.precision))
-        self.mean_var.set(round(subject.mean(), subject.units.precision))
-        self.pstdev_var.set(round(subject.pstdev(), subject.units.precision))
-        self.min_max_var.set(str(self.min_var.get()) + ' - ' + str(self.max_var.get()))
+        self.mean_var.set(round(subject.mean(), precision))
+        self.pstdev_var.set(round(subject.pstdev(), precision))
+        self.min_max_var.set(
+            str(round(subject.min(), precision)) + ' - ' + str(
+                round(subject.max(), precision)) + ' ' + units)
         try:
             last_val = subject.values[-1]
-            self.last_value.set(str(last_val) + subject.units.units)
+            self.last_value.set(str(last_val) + ' ' + units)
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -228,62 +228,45 @@ class Application(tk.Frame):
         # editor menu frame
         self.editor_menu = tk.Frame(self.editor)
         self.editor_menu.grid(row=1, columnspan=3, pady=2, sticky=tk.W+tk.E)
-        
+
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
                                     width=16, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
         self.count_label.grid(row=0, column=0, padx=2, pady=1)
-
+        # good/warning icon
         self.warning_label = tk.Label(self.editor_menu,
                                       image=self.neutral_icon)
-        self.warning_label.grid(row=0, rowspan=2, column=2, padx=5)
+        self.warning_label.grid(row=0, rowspan=2, column=2, padx=6)
         self.last_value_with_offset = tk.Label(self.editor_menu, bg='white',
                                                width=16, bd=1, relief=tk.SUNKEN,
                                                font=("Helvetica", 10, "bold"),
                                                textvariable=self.last_value)
         self.last_value_with_offset.grid(row=1, padx=2, pady=1, sticky=tk.W)
+        # min - max values
+        self.copy_preview = tk.Label(self.editor_menu,
+                                     textvariable=self.min_max_var, bg='white',
+                                     font=("Helvetica", 10, "bold"), bd=1,
+                                     relief=tk.SUNKEN)
+        self.copy_preview.grid(row=2, columnspan=2, padx=2, pady=1,
+                               sticky=tk.W+tk.E)
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
                                    font=("Helvetica", 9))
         self.stats.grid(row=3, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.min_label = tk.Label(self.stats, text='Min value',
-                                  anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.min_label.grid(row=0, column=0, padx=2, pady=2, sticky=tk.W)
-        self.max_label = tk.Label(self.stats, text='Max value',
-                                  anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.max_label.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
-        self.min = tk.Label(self.stats, textvariable=self.min_var,
-                            anchor=tk.W, font=("Helvetica", 9))
-        self.min.grid(row=1, column=0, padx=2, pady=2, sticky=tk.W)
-        self.max = tk.Label(self.stats, textvariable=self.max_var,
-                            anchor=tk.W, font=("Helvetica", 9))
-        self.max.grid(row=1, column=1, padx=2, pady=2, sticky=tk.W)
         self.mean_label = tk.Label(self.stats, text='Mean',
                                    anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.mean_label.grid(row=2, column=0, padx=2, pady=2, sticky=tk.W)
+        self.mean_label.grid(row=0, column=0, padx=2, pady=2, sticky=tk.W)
         self.pstdev_label = tk.Label(self.stats, text='PopStdDev',
                                      anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.pstdev_label.grid(row=2, column=1, padx=2, pady=2, sticky=tk.W)
+        self.pstdev_label.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
         self.mean = tk.Label(self.stats, textvariable=self.mean_var,
                              anchor=tk.W, font=("Helvetica", 9))
-        self.mean.grid(row=3, column=0, padx=2, pady=2, sticky=tk.W)
+        self.mean.grid(row=1, column=0, padx=2, pady=2, sticky=tk.W)
         self.pstdev = tk.Label(self.stats, textvariable=self.pstdev_var,
                                anchor=tk.W, font=("Helvetica", 9))
-        self.pstdev.grid(row=3, column=1, padx=2, pady=2, sticky=tk.W)
-        # min - max interval of values
-        self.preview_label = tk.Label(self.stats, text='Preview',
-                                      anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.preview_label.grid(row=4, padx=2, pady=2, columnspan=2,
-                                sticky=tk.W+tk.E)
-        self.copy_preview = tk.Label(self.stats,
-                                     textvariable=self.min_max_var, bg='white',
-                                     bd=1, relief=tk.SUNKEN,
-                                     anchor=tk.W,
-                                     font=("Helvetica", 10))
-        self.copy_preview.grid(row=5, columnspan=2, padx=4, pady=2,
-                               sticky=tk.W+tk.E)
+        self.pstdev.grid(row=1, column=1, padx=2, pady=2, sticky=tk.W)
 
         # options group frame
         self.options = tk.LabelFrame(self, text="Options",
