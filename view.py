@@ -234,16 +234,16 @@ class Application(tk.Frame):
                                     width=16, bd=1, relief=tk.SUNKEN,
                                     font=("Helvetica", 10, "bold"),
                                     textvariable=self.count_var)
-        self.count_label.grid(row=0, column=0, padx=3)
+        self.count_label.grid(row=0, column=0, padx=2, pady=1)
 
         self.warning_label = tk.Label(self.editor_menu,
                                       image=self.neutral_icon)
-        self.warning_label.grid(row=0, column=2, padx=4)
+        self.warning_label.grid(row=0, rowspan=2, column=2, padx=5)
         self.last_value_with_offset = tk.Label(self.editor_menu, bg='white',
                                                width=16, bd=1, relief=tk.SUNKEN,
                                                font=("Helvetica", 10, "bold"),
                                                textvariable=self.last_value)
-        self.last_value_with_offset.grid(row=1, padx=3, sticky=tk.W)
+        self.last_value_with_offset.grid(row=1, padx=2, pady=1, sticky=tk.W)
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
                                    font=("Helvetica", 9))
