@@ -118,9 +118,7 @@ class Application(tk.Frame):
         self.flasher(self.count_label, 'snow2')
         self.mean_var.set(round(subject.mean(), precision))
         self.pstdev_var.set(round(subject.pstdev(), precision))
-        self.min_max_var.set(
-            str(round(subject.min(), precision)) + ' - ' + str(
-                round(subject.max(), precision)) + ' ' + units)
+        self.min_max_var.set(subject.min_max())
         try:
             last_val = subject.values[-1]
             self.last_value.set(str(last_val) + ' ' + units)
@@ -244,6 +242,7 @@ class Application(tk.Frame):
                                                font=("Helvetica", 10, "bold"),
                                                textvariable=self.last_value)
         self.last_value_with_offset.grid(row=1, padx=2, pady=1, sticky=tk.W)
+        tooltip.Tooltip(self.last_value_with_offset, text='Last value')
         # min - max values
         self.copy_preview = tk.Label(self.editor_menu,
                                      textvariable=self.min_max_var, bg='white',
@@ -251,9 +250,11 @@ class Application(tk.Frame):
                                      relief=tk.SUNKEN)
         self.copy_preview.grid(row=2, columnspan=2, padx=2, pady=1,
                                sticky=tk.W+tk.E)
+        tooltip.Tooltip(self.copy_preview, text='Min - Max interval')
+
         # statistics group frame
         self.stats = tk.LabelFrame(self, text="Statistics",
-                                   font=("Helvetica", 9))
+                                   font=("Helvetica", 10))
         self.stats.grid(row=3, padx=4, pady=3, sticky=tk.W+tk.E)
         self.mean_label = tk.Label(self.stats, text='Mean',
                                    anchor=tk.W, font=("Helvetica", 9, "bold"))
@@ -321,8 +322,7 @@ class Application(tk.Frame):
         self.clipboard_clear()
         text = self.get_editor_content()
         if text is not None:
-            self.clipboard_append(
-                self.min_max_var.get() + self.model.units.units)
+            self.clipboard_append(self.min_max_var.get())
         self.update()
 
     def clear_data_entry(self):

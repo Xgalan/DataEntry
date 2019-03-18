@@ -145,6 +145,16 @@ class Model(Subject):
         else:
             return 0.0
 
+    def min_max(self):
+        if self.values:
+            return (str(self.min()) +
+                    ' - ' +
+                    str(self.max()) +
+                    ' ' +
+                    self.units.units)
+        else:
+            return None
+
     def pstdev(self):
         if self.values:
             return statistics.pstdev(self.values)
