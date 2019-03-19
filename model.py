@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import statistics
+import statsutils
 
 
 
@@ -68,6 +69,7 @@ class Model(Subject):
     def __init__(self, values=[], offset=0):
         Subject.__init__(self)
         self._units = UnitRegistry()
+
         try:
             if isinstance(values, list):
                 self._values = values
@@ -129,13 +131,13 @@ class Model(Subject):
 
     def min(self):
         if self.values:
-            return min(self.values)
+            return round(min(self.values), self.units.precision)
         else:
             return 0.0
 
     def max(self):
         if self.values:
-            return max(self.values)
+            return round(max(self.values), self.units.precision)
         else:
             return 0.0
 

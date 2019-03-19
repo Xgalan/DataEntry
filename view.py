@@ -112,7 +112,7 @@ class Application(tk.Frame):
 
     def update_values(self, subject):
         ''' observer pattern '''
-        precision = subject.units.precision
+        precision = self.precision.get()
         units = subject.units.units
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
@@ -120,7 +120,7 @@ class Application(tk.Frame):
         self.pstdev_var.set(round(subject.pstdev(), precision))
         self.min_max_var.set(subject.min_max())
         try:
-            last_val = subject.values[-1]
+            last_val = round(subject.values[-1], precision)
             self.last_value.set(str(last_val) + ' ' + units)
         except IndexError:
             self.last_value.set('No valid value')
@@ -330,6 +330,7 @@ class Application(tk.Frame):
         delete the content of the editor and delete the values of the options.
         '''
         self.data_entry.delete("1.0", 'end-1c')
+        self.data_entry.edit_modified(False)
         self.offset_entry.delete(0, tk.END)
         self.offset_checkbutton.deselect()
         self.min_max_var.set(self.min_max_var.default)
