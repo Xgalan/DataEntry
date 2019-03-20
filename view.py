@@ -59,13 +59,12 @@ class Application(tk.Frame):
         self.green_icon = tk.PhotoImage(data=icons.green_led)
         self.neutral_icon = tk.PhotoImage(data=icons.neutral_led)
         self.yellow_icon = tk.PhotoImage(data=icons.yellow_led)
+        self.alert_icon = tk.PhotoImage(data=icons.alert_triangle)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
-        self.min_max_var = tk.StringVar(value='- - - - -')
-        self.min_max_var.default = '- - - - -'
+        self.min_max_var = tk.StringVar(value='- - - - - -')
+        self.min_max_var.default = '- - - - - -'
         self.count_var = tk.StringVar(value='Count: 0')
-        self.mean_var = tk.DoubleVar(0.0)
-        self.pstdev_var = tk.DoubleVar(0.0)
         self.precision = tk.IntVar()
         self.precision.set(self.model.units.precision)
         self.min_warning = tk.DoubleVar(0.0)
@@ -116,8 +115,6 @@ class Application(tk.Frame):
         units = subject.units.units
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
-        self.mean_var.set(round(subject.mean(), precision))
-        self.pstdev_var.set(round(subject.pstdev(), precision))
         self.min_max_var.set(subject.min_max())
         try:
             last_val = round(subject.values[-1], precision)
@@ -141,12 +138,17 @@ class Application(tk.Frame):
         if text is not None:
             self.model.values = text.splitlines()
             lastv = self.model.values[-1]
-            if lastv >= self.min_warning.get() and lastv <= self.max_warning.get():
+            min_v = self.min_warning.get()
+            max_v = self.max_warning.get()
+            if lastv >= min_v and lastv <= max_v:
                 self.warning_label.configure(image=self.green_icon)
                 self.warning_label.image = self.green_icon
             else:
                 self.warning_label.configure(image=self.yellow_icon)
                 self.warning_label.image = self.yellow_icon
+            if self.model.min() < min_v or self.model.max() > max_v:
+                self.alert_on_interval.configure(image=self.alert_icon)
+                self.alert_on_interval.image = self.alert_icon
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
@@ -230,54 +232,38 @@ class Application(tk.Frame):
         # model elements count
         self.count_label = tk.Label(self.editor_menu, bg='white',
                                     width=16, bd=1, relief=tk.SUNKEN,
-                                    font=("Helvetica", 10, "bold"),
+                                    font=("Helvetica", 11, "bold"),
                                     textvariable=self.count_var)
-        self.count_label.grid(row=0, column=0, padx=2, pady=1)
+        self.count_label.grid(row=0, column=0, padx=1, pady=1)
         # good/warning icon
         self.warning_label = tk.Label(self.editor_menu,
                                       image=self.neutral_icon)
         self.warning_label.grid(row=0, rowspan=2, column=2, padx=6)
         self.last_value_with_offset = tk.Label(self.editor_menu, bg='white',
                                                width=16, bd=1, relief=tk.SUNKEN,
-                                               font=("Helvetica", 10, "bold"),
+                                               font=("Helvetica", 11, "bold"),
                                                textvariable=self.last_value)
-        self.last_value_with_offset.grid(row=1, padx=2, pady=1, sticky=tk.W)
+        self.last_value_with_offset.grid(row=1, padx=1, pady=1, sticky=tk.W)
         tooltip.Tooltip(self.last_value_with_offset, text='Last value')
         # min - max values
         self.copy_preview = tk.Label(self.editor_menu,
                                      textvariable=self.min_max_var, bg='white',
-                                     font=("Helvetica", 10, "bold"), bd=1,
+                                     font=("Helvetica", 11, "bold"), bd=1,
                                      relief=tk.SUNKEN)
-        self.copy_preview.grid(row=2, columnspan=2, padx=2, pady=1,
+        self.copy_preview.grid(row=2, columnspan=2, padx=1, pady=2,
                                sticky=tk.W+tk.E)
         tooltip.Tooltip(self.copy_preview, text='Min - Max interval')
-
-        # statistics group frame
-        self.stats = tk.LabelFrame(self, text="Statistics",
-                                   font=("Helvetica", 10))
-        self.stats.grid(row=3, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.mean_label = tk.Label(self.stats, text='Mean',
-                                   anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.mean_label.grid(row=0, column=0, padx=2, pady=2, sticky=tk.W)
-        self.pstdev_label = tk.Label(self.stats, text='PopStdDev',
-                                     anchor=tk.W, font=("Helvetica", 9, "bold"))
-        self.pstdev_label.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
-        self.mean = tk.Label(self.stats, textvariable=self.mean_var,
-                             anchor=tk.W, font=("Helvetica", 9))
-        self.mean.grid(row=1, column=0, padx=2, pady=2, sticky=tk.W)
-        self.pstdev = tk.Label(self.stats, textvariable=self.pstdev_var,
-                               anchor=tk.W, font=("Helvetica", 9))
-        self.pstdev.grid(row=1, column=1, padx=2, pady=2, sticky=tk.W)
-
+        self.alert_on_interval = tk.Label(self.editor_menu)
+        self.alert_on_interval.grid(row=2, column=2)
         # options group frame
         self.options = tk.LabelFrame(self, text="Options",
                                      font=("Helvetica", 9))
-        self.options.grid(row=4, padx=4, pady=4, sticky=tk.W+tk.E)
+        self.options.grid(row=3, padx=4, pady=4, sticky=tk.W+tk.E)
         # measure offset - accepts a positive or negative number
         self.offset_checkbutton = tk.Checkbutton(self.options, text='Offset',
                                                  variable=self.offset_option,
                                                  command=self.offset_cback)
-        self.offset_checkbutton.grid(row=0, column=0, pady=2, sticky=tk.W)
+        self.offset_checkbutton.grid(row=0, pady=2, sticky=tk.W)
         # offset entry with validation
         self.change_sign = tk.Button(self.options, text='+/-',
                                      font=("Helvetica", 9, "bold"),

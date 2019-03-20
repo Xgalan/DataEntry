@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import statistics
-import statsutils
+from statsutils import Stats
 
 
 
@@ -65,7 +64,9 @@ class UnitRegistry:
 
 
 class Model(Subject):
-    ''' Model class of a list of values of float type. With statistics. '''
+    '''
+    Model class of a list of values of float type. With offline statistics.
+    '''
     def __init__(self, values=[], offset=0):
         Subject.__init__(self)
         self._units = UnitRegistry()
@@ -141,12 +142,6 @@ class Model(Subject):
         else:
             return 0.0
 
-    def mean(self):
-        if self.values:
-            return statistics.mean(self.values)
-        else:
-            return 0.0
-
     def min_max(self):
         if self.values:
             return (str(self.min()) +
@@ -157,11 +152,9 @@ class Model(Subject):
         else:
             return None
 
-    def pstdev(self):
-        if self.values:
-            return statistics.pstdev(self.values)
-        else:
-            return 0.0
+    @property
+    def stats(self):
+        return Stats(self.values)
 
     def __repr__(self):
         return "{__class__.__name__}(values=[{_values_str}], offset={_offset_str})".format(
