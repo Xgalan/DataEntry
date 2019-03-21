@@ -147,8 +147,11 @@ class Application(tk.Frame):
                 self.warning_label.configure(image=self.yellow_icon)
                 self.warning_label.image = self.yellow_icon
             if self.model.min() < min_v or self.model.max() > max_v:
-                self.alert_on_interval.configure(image=self.alert_icon)
-                self.alert_on_interval.image = self.alert_icon
+                self.alert_on_interval.configure(image=self.yellow_icon)
+                self.alert_on_interval.image = self.yellow_icon
+            else:
+                self.alert_on_interval.configure(image=self.green_icon)
+                self.alert_on_interval.image = self.green_icon
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
@@ -159,6 +162,7 @@ class Application(tk.Frame):
             'max_warning': self.max_warning.get(),
             }
         self.d = SettingsDialog(self, title='Settings', defaults=defaults)
+        #TODO: structure!
         if hasattr(self.d, 'units'):
             self.model.units = self.d.units
         if hasattr(self.d, 'precision'):
@@ -238,7 +242,7 @@ class Application(tk.Frame):
         # good/warning icon
         self.warning_label = tk.Label(self.editor_menu,
                                       image=self.neutral_icon)
-        self.warning_label.grid(row=0, rowspan=2, column=2, padx=6)
+        self.warning_label.grid(row=1, column=2, padx=4)
         self.last_value_with_offset = tk.Label(self.editor_menu, bg='white',
                                                width=16, bd=1, relief=tk.SUNKEN,
                                                font=("Helvetica", 11, "bold"),
@@ -253,8 +257,9 @@ class Application(tk.Frame):
         self.copy_preview.grid(row=2, columnspan=2, padx=1, pady=2,
                                sticky=tk.W+tk.E)
         tooltip.Tooltip(self.copy_preview, text='Min - Max interval')
-        self.alert_on_interval = tk.Label(self.editor_menu)
-        self.alert_on_interval.grid(row=2, column=2)
+        self.alert_on_interval = tk.Label(self.editor_menu,
+                                          image=self.neutral_icon)
+        self.alert_on_interval.grid(row=2, column=2, padx=4)
         # options group frame
         self.options = tk.LabelFrame(self, text="Options",
                                      font=("Helvetica", 9))
@@ -323,6 +328,8 @@ class Application(tk.Frame):
         self.count_var.set('Count: 0')
         self.warning_label.configure(image=self.neutral_icon)
         self.warning_label.image = self.neutral_icon
+        self.alert_on_interval.configure(image=self.neutral_icon)
+        self.alert_on_interval.image = self.neutral_icon
         self.model.values = []
         self.model.offset = 0.0
         self.update()
