@@ -14,22 +14,22 @@ import dialog
 
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
-        tk.Label(master, anchor=tk.W, text='Units:').grid(row=0, sticky=tk.W)
-        tk.Label(master, anchor=tk.W, text='Precision:').grid(row=1,
-                                                              sticky=tk.W)
-        tk.Label(master, anchor=tk.W, text='Min. warning:').grid(row=2,
-                                                                 sticky=tk.W)
-        tk.Label(master, anchor=tk.W, text='Max warning:').grid(row=3,
-                                                                sticky=tk.W)
+        [tk.Label(master, anchor=tk.W, text=o.capitalize()).grid(row=i, sticky=tk.W)
+         for i,o in enumerate(self.options)]
         [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
-        self.e1.insert(0, self.defaults['units'])
-        self.e2.insert(0, self.defaults['precision'])
-        self.e3.insert(0, self.defaults['min_warning'])
-        self.e4.insert(0, self.defaults['max_warning'])
+        self.e1.insert(0, self.options['units'])
+        self.e2.insert(0, self.options['precision'])
+        self.e3.insert(0, self.options['min_warning'])
+        self.e4.insert(0, self.options['max_warning'])
         self.e1.grid(row=0, column=1)
         self.e2.grid(row=1, column=1)
         self.e3.grid(row=2, column=1)
         self.e4.grid(row=3, column=1)
+        #tooltips
+        tooltip.Tooltip(self.e1, text='Enter unit of measurement')
+        tooltip.Tooltip(self.e2, text='Enter decimals')
+        tooltip.Tooltip(self.e3, text='Enter lower tolerance')
+        tooltip.Tooltip(self.e4, text='Enter upper tolerance')
         return self.e1 # initial focus
 
     def validate(self):
@@ -39,14 +39,23 @@ class SettingsDialog(dialog.Dialog):
             return False
 
     def apply(self):
-        self.units = self.e1.get()
-        self.precision = self.e2.get()
-        self.min_warning = self.e3.get()
-        self.max_warning = self.e4.get()
+        self.settings = {
+            'units': self.e1.get(),
+            'precision': self.e2.get(),
+            'min_warning': self.e3.get(),
+            'max_warning': self.e4.get()
+            }
+
 
 class StatsDialog(dialog.Dialog):
     def body(self, master):
-        pass
+        [(tk.Label(master, anchor=tk.W, text=s[0].title())
+          .grid(row=i, sticky=tk.W),
+          tk.Label(master, anchor=tk.E, text=s[1])
+          .grid(row=i, column=1, sticky=tk.E)
+          )
+         for i,s in enumerate(self.options.describe().items())]
+        return
 
     def validate(self):
         return 1
@@ -172,20 +181,16 @@ class Application(tk.Frame):
             'min_warning': self.min_warning.get(),
             'max_warning': self.max_warning.get(),
             }
-        self.d = SettingsDialog(self, title='Settings', defaults=defaults)
-        #TODO: structure!
-        if hasattr(self.d, 'units'):
-            self.model.units = self.d.units
-        if hasattr(self.d, 'precision'):
-            self.precision.set(self.d.precision)
-        if hasattr(self.d, 'min_warning'):
-            self.min_warning.set(self.d.min_warning)
-        if hasattr(self.d, 'max_warning'):
-            self.max_warning.set(self.d.max_warning)
+        self.d = SettingsDialog(self, title='Settings', options=defaults)
+        if hasattr(self.d, 'settings'):
+            self.model.units = self.d.settings['units']
+            self.precision.set(self.d.settings['precision'])
+            self.min_warning.set(self.d.settings['min_warning'])
+            self.max_warning.set(self.d.settings['max_warning'])
 
     def stats_dialog(self):
         ''' Offline statistics '''
-        self.sd = StatsDialog(self, title='Statistics')
+        self.sd = StatsDialog(self, title='Statistics', options=self.model.stats)
 
     def create_widgets(self):
         # menu
