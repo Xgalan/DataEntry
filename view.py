@@ -44,6 +44,16 @@ class SettingsDialog(dialog.Dialog):
         self.min_warning = self.e3.get()
         self.max_warning = self.e4.get()
 
+class StatsDialog(dialog.Dialog):
+    def body(self, master):
+        pass
+
+    def validate(self):
+        return 1
+
+    def apply(self):
+        pass
+
 
 class Application(tk.Frame):
     def __init__(self, master=None, model=None):
@@ -60,6 +70,7 @@ class Application(tk.Frame):
         self.neutral_icon = tk.PhotoImage(data=icons.neutral_led)
         self.yellow_icon = tk.PhotoImage(data=icons.yellow_led)
         self.alert_icon = tk.PhotoImage(data=icons.alert_triangle)
+        self.chart_icon = tk.PhotoImage(data=icons.bar_chart)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - - -')
@@ -172,45 +183,53 @@ class Application(tk.Frame):
         if hasattr(self.d, 'max_warning'):
             self.max_warning.set(self.d.max_warning)
 
+    def stats_dialog(self):
+        ''' Offline statistics '''
+        self.sd = StatsDialog(self, title='Statistics')
+
     def create_widgets(self):
         # menu
         self.menu = tk.Frame(self, padx=2, pady=3, bd=1, relief=tk.RAISED)
         self.menu.grid(row=0, sticky='NWE')
-        # quit button
-        self.quit = tk.Button(self.menu, image=self.quit_icon,
-                              command=self.quit_dialog)
-        self.quit.image = self.quit_icon
-        self.quit.grid(row=0, column=5, sticky=tk.E)
-        # minimize to tray button
-        self.minimize = tk.Button(self.menu, image=self.minimize_icon,
-                                  command=self.master.wm_iconify)
-        self.minimize.image = self.minimize_icon
-        self.minimize.grid(row=0, column=4, sticky=tk.E)
+        # button for statistics dialog
+        self.stats_btn = tk.Button(self.menu, image=self.chart_icon,
+                                   command=self.stats_dialog)
+        self.stats_btn.image = self.chart_icon
+        self.stats_btn.grid(row=1, column=0, sticky=tk.E)
         # copy to clipboard
         self.copy_to_clip_btn = tk.Button(self.menu,
                                           command=self.cp_to_clipboard,
                                           image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
-        self.copy_to_clip_btn.grid(row=0, column=0)
+        self.copy_to_clip_btn.grid(row=1, column=1)
         # save to CSV button
         self.save_btn = tk.Button(self.menu,
                                   command=self.export_as_csv,
                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
-        self.save_btn.grid(row=0, column=1, sticky=tk.E)
-        # settings button
-        self.settings_btn = tk.Button(self.menu,
-                                      command=self.settings_dialog,
-                                      image=self.options_icon)
-        self.settings_btn.image = self.options_icon
-        self.settings_btn.grid(row=0, column=3, sticky=tk.E)
+        self.save_btn.grid(row=1, column=2, sticky=tk.E)
         # reset data entry button
         self.data_entry_clear = tk.Button(self.menu,
                                           command=self.clear_data_entry,
                                           image=self.delete_icon)
         self.data_entry_clear.image = self.delete_icon
-        self.data_entry_clear.grid(row=0, column=2, sticky=tk.E)
-        
+        self.data_entry_clear.grid(row=1, column=3, sticky=tk.E)
+        # settings button
+        self.settings_btn = tk.Button(self.menu,
+                                      command=self.settings_dialog,
+                                      image=self.options_icon)
+        self.settings_btn.image = self.options_icon
+        self.settings_btn.grid(row=1, column=4, sticky=tk.E)
+        # quit button
+        self.quit = tk.Button(self.menu, image=self.quit_icon,
+                              command=self.quit_dialog)
+        self.quit.image = self.quit_icon
+        self.quit.grid(row=0, column=4, sticky=tk.E)
+        # minimize to tray button
+        self.minimize = tk.Button(self.menu, image=self.minimize_icon,
+                                  command=self.master.wm_iconify)
+        self.minimize.image = self.minimize_icon
+        self.minimize.grid(row=0, column=3, sticky=tk.E)
         # tooltips
         tooltip.Tooltip(self.quit, text='Quit')
         tooltip.Tooltip(self.minimize, text='Minimize')
