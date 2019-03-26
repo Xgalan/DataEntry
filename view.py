@@ -14,8 +14,16 @@ import dialog
 
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
-        [tk.Label(master, anchor=tk.W, text=o.capitalize()).grid(row=i, sticky=tk.W)
-         for i,o in enumerate(self.options)]
+        tk.Label(master, anchor=tk.W, text='Units').grid(
+                     row=0, sticky=tk.W)
+        tk.Label(master, anchor=tk.W, text='Precision').grid(
+                     row=1, sticky=tk.W)
+        tk.Label(master, anchor=tk.W,
+                 text='Min. warning').grid(
+                     row=2, sticky=tk.W)
+        tk.Label(master, anchor=tk.W,
+                 text='Max. warning').grid(
+                     row=3, sticky=tk.W)
         [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
         self.e1.insert(0, self.options['units'])
         self.e2.insert(0, self.options['precision'])
