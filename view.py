@@ -370,6 +370,7 @@ class Application(tk.Frame):
         ''' export as a CSV file the content of the editor. '''
         text = self.get_editor_content()
         um = self.model.units.description
+        #TODO: check if 'offset' is selected
         if text is not None:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to CSV file",
@@ -379,4 +380,4 @@ class Application(tk.Frame):
                 exported_file = csv.writer(csvfile, dialect='excel')
                 exported_file.writerow(['Value', 'Units'])
                 [exported_file.writerow([str(line), um]) for line in
-                 text.splitlines()]
+                 self.model.values]
