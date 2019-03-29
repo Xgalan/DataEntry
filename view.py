@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import string
-import csv
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import webbrowser
@@ -54,27 +53,9 @@ class SettingsDialog(dialog.Dialog):
             }
 
 
-class StatsDialog(dialog.Dialog):
-    def body(self, master):
-        [(tk.Label(master, anchor=tk.W, text=s[0].title())
-          .grid(row=i, sticky=tk.W),
-          tk.Label(master, anchor=tk.E, text=s[1])
-          .grid(row=i, column=1, sticky=tk.E)
-          )
-         for i,s in enumerate(self.options.describe().items())]
-        return
-
-    def validate(self):
-        return 1
-
-    def apply(self):
-        pass
-
-
 class Application(tk.Frame):
-    def __init__(self, master=None, model=None):
+    def __init__(self, master=None):
         super().__init__(master)
-        self.model = model
         # icons
         self.quit_icon = tk.PhotoImage(data=icons.quit_image)
         self.copy_icon = tk.PhotoImage(data=icons.copy_image)
@@ -93,7 +74,7 @@ class Application(tk.Frame):
         self.min_max_var.default = '- - - - - -'
         self.count_var = tk.StringVar(value='Count: 0')
         self.precision = tk.IntVar()
-        self.precision.set(self.model.units.precision)
+        self.precision.set(2)
         self.min_warning = tk.DoubleVar(0.0)
         self.max_warning = tk.DoubleVar(0.0)
         self.last_value = tk.StringVar(value='- - - - - -')
@@ -138,7 +119,7 @@ class Application(tk.Frame):
 
     def update_values(self, subject):
         ''' observer pattern '''
-        precision = self.precision.get()
+        precision = subject.units.precision
         units = subject.units.units
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
@@ -153,9 +134,9 @@ class Application(tk.Frame):
         try:
             # check if the user has entered an offset value
             if self.offset_option.get() is True:
-                self.model.offset=float(self.offset_entry.get())
+                self.controller.set_offset(float(self.offset_entry.get()))
             else:
-                self.model.offset=0.0
+                self.controller.set_offset(0.0)
             return self.offset_option.get()
         except ValueError:
             return
@@ -163,8 +144,8 @@ class Application(tk.Frame):
     def update_model_values(self, *args):
         text = self.get_editor_content()
         if text is not None:
-            self.model.values = text.splitlines()
-            lastv = self.model.values[-1]
+            self.controller.set_values(text.splitlines())
+            lastv = self.controller.get_values()[-1]
             min_v = self.min_warning.get()
             max_v = self.max_warning.get()
             if lastv >= min_v and lastv <= max_v:
@@ -173,7 +154,7 @@ class Application(tk.Frame):
             else:
                 self.warning_label.configure(image=self.yellow_icon)
                 self.warning_label.image = self.yellow_icon
-            if self.model.min() < min_v or self.model.max() > max_v:
+            if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
                 self.alert_on_interval.configure(image=self.yellow_icon)
                 self.alert_on_interval.image = self.yellow_icon
             else:
@@ -183,28 +164,24 @@ class Application(tk.Frame):
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
         defaults = {
-            'units': self.model.units,
+            'units': self.controller.get_units(),
             'precision': self.precision.get(),
             'min_warning': self.min_warning.get(),
             'max_warning': self.max_warning.get(),
             }
         self.d = SettingsDialog(self, title='Settings', options=defaults)
         if hasattr(self.d, 'settings'):
-            self.model.units = self.d.settings['units']
+            self.controller.set_units = self.d.settings['units']
             self.precision.set(self.d.settings['precision'])
             self.min_warning.set(self.d.settings['min_warning'])
             self.max_warning.set(self.d.settings['max_warning'])
 
-    def stats_dialog(self):
-        ''' Offline statistics '''
-        self.sd = StatsDialog(self, title='Statistics',
-                              options=self.model.stats)
-
     def view_stats(self):
         ''' View offline statistics '''
         url = 'http://localhost'
-        print(self.model.stats)
-        webbrowser.open(url, new=2)
+        print(self.controller.stats.describe())
+        print(self.controller.export_to_html())
+        #webbrowser.open(url, new=2)
 
     def create_widgets(self):
         # menu
@@ -212,7 +189,7 @@ class Application(tk.Frame):
         self.menu.grid(row=0, sticky='NWE')
         # button for statistics dialog
         self.stats_btn = tk.Button(self.menu, image=self.chart_icon,
-                                   command=self.stats_dialog)
+                                   command=self.view_stats)
         self.stats_btn.image = self.chart_icon
         self.stats_btn.grid(row=1, column=0, sticky=tk.E)
         # copy to clipboard
@@ -368,22 +345,17 @@ class Application(tk.Frame):
         self.warning_label.image = self.neutral_icon
         self.alert_on_interval.configure(image=self.neutral_icon)
         self.alert_on_interval.image = self.neutral_icon
-        self.model.values = []
-        self.model.offset = 0.0
+        self.controller.set_values([])
+        self.controller.set_offset(0.0)
         self.update()
 
     def export_as_csv(self):
         ''' export as a CSV file the content of the editor. '''
         text = self.get_editor_content()
-        um = self.model.units.description
         #TODO: check if 'offset' is selected
         if text is not None:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to CSV file",
                                                     filetypes=(("CSV files", "*.csv"),
                                                                ("all files", "*.*")))
-            with open(filename, 'w', newline='') as csvfile:
-                exported_file = csv.writer(csvfile, dialect='excel')
-                exported_file.writerow(['Value', 'Units'])
-                [exported_file.writerow([str(line), um]) for line in
-                 self.model.values]
+            self.controller.export_to_csv(filename)

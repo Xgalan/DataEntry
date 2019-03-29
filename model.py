@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from statsutils import Stats
-
-
-
 class Subject(object):
     def __init__(self):
         self._observers = []
@@ -150,10 +146,6 @@ class Model(Subject):
                     self.units.units)
         else:
             return None
-
-    @property
-    def stats(self):
-        return Stats(self.values)
 
     def __repr__(self):
         return "{__class__.__name__}(values=[{_values_str}], offset={_offset_str})".format(
