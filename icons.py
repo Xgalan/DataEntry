@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # coding: utf-8
 
 quit_image = b'R0lGODlhGAAYAIABAAAAAP///yH5BAEKAAEALAAAAAAYABgAAAJGjI+py60Ao5wx0XsRdA9oz31ieGwlSAamsaqoO7Jv5c62NeHx2cq73IOdcBLdkAfctZa3Y4qZ8jlJ0CgTg33Vsrmo92soAAA7'

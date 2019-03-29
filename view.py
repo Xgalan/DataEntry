@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-# coding: utf-8
-
+# -*- coding: utf-8 -*-
 import string
 import csv
 import tkinter as tk
 from tkinter import messagebox, filedialog
+import webbrowser
 
 import icons
 import tooltip
@@ -198,7 +197,14 @@ class Application(tk.Frame):
 
     def stats_dialog(self):
         ''' Offline statistics '''
-        self.sd = StatsDialog(self, title='Statistics', options=self.model.stats)
+        self.sd = StatsDialog(self, title='Statistics',
+                              options=self.model.stats)
+
+    def view_stats(self):
+        ''' View offline statistics '''
+        url = 'http://localhost'
+        print(self.model.stats)
+        webbrowser.open(url, new=2)
 
     def create_widgets(self):
         # menu
