@@ -121,14 +121,12 @@ class Application(tk.Frame):
 
     def update_values(self, subject):
         ''' observer pattern '''
-        precision = subject.units.precision
-        units = subject.units.units
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
         try:
-            last_val = round(subject.values[-1], precision)
-            self.last_value.set(str(last_val) + ' ' + units)
+            last_val = round(subject.values[-1], subject.units.precision)
+            self.last_value.set(str(last_val) + ' ' + subject.units.units)
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -138,7 +136,7 @@ class Application(tk.Frame):
             if self.offset_option.get() is True:
                 self.controller.set_offset(float(self.offset_entry.get()))
             else:
-                self.controller.set_offset(0.0)
+                self.controller.offset = 0.0
             return self.offset_option.get()
         except ValueError:
             return
@@ -147,7 +145,7 @@ class Application(tk.Frame):
         text = self.get_editor_content()
         if text is not None:
             self.controller.set_values(text.splitlines())
-            lastv = self.controller.get_values()[-1]
+            lastv = self.controller.values[-1]
             min_v = self.min_warning.get()
             max_v = self.max_warning.get()
             if lastv >= min_v and lastv <= max_v:
@@ -166,7 +164,7 @@ class Application(tk.Frame):
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
         defaults = {
-            'units': self.controller.get_units(),
+            'units': self.controller.units,
             'precision': self.precision.get(),
             'min_warning': self.min_warning.get(),
             'max_warning': self.max_warning.get(),
@@ -177,14 +175,6 @@ class Application(tk.Frame):
             self.precision.set(self.d.settings['precision'])
             self.min_warning.set(self.d.settings['min_warning'])
             self.max_warning.set(self.d.settings['max_warning'])
-
-    def view_stats(self):
-        ''' View offline statistics '''
-        url = 'https://itty.bitty.site/#/'+base64.b64encode(
-            lzma.compress(
-                bytes(self.controller.export_to_html(), encoding="utf-8"),
-                format=lzma.FORMAT_ALONE, preset=9)).decode("utf-8")
-        webbrowser.open(url, new=2)
 
     def create_widgets(self):
         # menu
@@ -362,3 +352,11 @@ class Application(tk.Frame):
                                                     filetypes=(("CSV files", "*.csv"),
                                                                ("all files", "*.*")))
             self.controller.export_to_csv(filename)
+
+    def view_stats(self):
+        ''' View offline statistics '''
+        url = 'https://itty.bitty.site/#/'+base64.b64encode(
+            lzma.compress(
+                bytes(self.controller.export_to_html(), encoding="utf-8"),
+                format=lzma.FORMAT_ALONE, preset=9)).decode("utf-8")
+        webbrowser.open(url, new=2)

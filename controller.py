@@ -2,46 +2,52 @@
 
 import csv
 
+from model import Model
 from tableutils import Table
 from statsutils import Stats
 
 
 
 class Controller:
-    def __init__(self, model, view):
-        self.model = model
+    def __init__(self, view=None):
+        self._model = Model()
         self.view = view
 
-    def get_values(self):
-        return self.model.values
+    def __getattr__(self, name):
+        attr = getattr(self._model, name)
+
+        if not callable(attr):
+            return attr
+
+        def wrapper(*args, **kwargs):
+            return attr(*args, **kwargs)
+        return wrapper
 
     def set_values(self, values):
-        self.model.values = values
+        self._model.values = values
 
     def set_offset(self, offset):
-        self.model.offset = offset
-
-    def get_units(self):
-        return self.model.units
+        self._model.offset = offset
 
     def set_units(self, units):
-        self.model.units = units
+        self._model.units = units
 
     @property
     def stats(self):
-        return Stats(self.get_values())
+        return Stats(self.values)
 
     def export_to_csv(self, filename):
-        um = self.get_units().description
+        um = self.units.description
         with open(filename, 'w', newline='') as csvfile:
             exported_file = csv.writer(csvfile, dialect='excel')
             exported_file.writerow(['Value', 'Units'])
             [exported_file.writerow([str(line), um]) for line in
-             self.get_values()]
+             self.values]
 
     def export_to_html(self):
-        um = self.get_units()
-        data = self.get_values()
-        t = Table(data=[(i,v,str(um)) for (i,v) in enumerate(data)],
-                  headers=['#', 'Value', 'Units'])
-        return '<hr>' + t.to_html()
+        um = self.units.description
+        tabledata = Table(data=[(i,v,um) for (i,v) in enumerate(self.values)],
+                          headers=['#', 'Value', 'Units'])
+        statstable = Table(data=self.stats.describe(format='list'),
+                           headers=['Property', 'Value'])
+        return tabledata.to_html() + '<hr>' + statstable.to_html()
