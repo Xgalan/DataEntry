@@ -40,7 +40,8 @@ class Controller:
              self.get_values()]
 
     def export_to_html(self):
+        um = self.get_units()
         data = self.get_values()
-        print(data)
-        t = Table(data=[data], headers=None)
-        return t.to_html()
+        t = Table(data=[(i,v,str(um)) for (i,v) in enumerate(data)],
+                  headers=['#', 'Value', 'Units'])
+        return '<hr>' + t.to_html()

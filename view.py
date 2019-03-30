@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import string
+import lzma
+import base64
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import webbrowser
@@ -178,10 +180,11 @@ class Application(tk.Frame):
 
     def view_stats(self):
         ''' View offline statistics '''
-        url = 'http://localhost'
-        print(self.controller.stats.describe())
-        print(self.controller.export_to_html())
-        #webbrowser.open(url, new=2)
+        url = 'https://itty.bitty.site/#/'+base64.b64encode(
+            lzma.compress(
+                bytes(self.controller.export_to_html(), encoding="utf-8"),
+                format=lzma.FORMAT_ALONE, preset=9)).decode("utf-8")
+        webbrowser.open(url, new=2)
 
     def create_widgets(self):
         # menu
