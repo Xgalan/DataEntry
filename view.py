@@ -222,6 +222,7 @@ class Application(tk.Frame):
         # tooltips
         tooltip.Tooltip(self.quit, text='Quit')
         tooltip.Tooltip(self.minimize, text='Minimize')
+        tooltip.Tooltip(self.stats_btn, text='View offline statistics...')
         tooltip.Tooltip(self.save_btn, text='Save to CSV...')
         tooltip.Tooltip(self.settings_btn, text='Settings...')
         tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
