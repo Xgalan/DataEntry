@@ -182,7 +182,7 @@ class Application(tk.Frame):
         self.menu.grid(row=0, sticky='NWE')
         # button for statistics dialog
         self.stats_btn = tk.Button(self.menu, image=self.chart_icon,
-                                   command=self.view_stats)
+                                   command=self.export_as_xlsx)
         self.stats_btn.image = self.chart_icon
         self.stats_btn.grid(row=1, column=0, sticky=tk.E)
         # copy to clipboard
@@ -353,6 +353,15 @@ class Application(tk.Frame):
                                                     filetypes=(("CSV files", "*.csv"),
                                                                ("all files", "*.*")))
             self.controller.export_to_csv(filename)
+    
+    def export_as_xlsx(self):
+        ''' export as xlsx file '''
+        if self.controller.values:
+            filename = filedialog.asksaveasfilename(initialdir="/%HOME",
+                                                    title="Export to XLSX file",
+                                                    filetypes=(("XLSX files", "*.xlsx"),
+                                                               ("all files", "*.*")))
+            self.controller.export_xlsx(filename)
 
     def view_stats(self):
         ''' View offline statistics '''
