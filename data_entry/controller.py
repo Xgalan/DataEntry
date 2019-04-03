@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import csv
+from openpyxl import Workbook
 
 from model import Model
 from tableutils import Table
@@ -51,3 +52,11 @@ class Controller:
         statstable = Table(data=self.stats.describe(format='list'),
                            headers=['Property', 'Value'])
         return tabledata.to_html() + '<hr>' + statstable.to_html()
+    
+    def export_xlsx(self):
+        um = self.units.description
+        table = [[str(line), um] for line in self.values]
+        wb = Workbook(write_only = True)
+        ws = wb.create_sheet()
+        ws.append(table)
+        return wb
