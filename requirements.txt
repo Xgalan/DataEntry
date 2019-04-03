@@ -1,0 +1,5 @@
+-e git+https://github.com/Xgalan/DataEntry.git@9ca3395e6d89f62ddb0a1588bfd6578b8583a6eb#egg=DataEntry
+et-xmlfile==1.0.1
+jdcal==1.4
+openpyxl==2.6.2
+pkg-resources==0.0.0
