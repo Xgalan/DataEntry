@@ -67,7 +67,8 @@ class Controller:
         cellstyle.font = Font(name='Calibri', size=11)
         headerstyle.font = Font(name='Calibri', size=11, bold=True)
         bd = Side(border_style='thin')
-        cellstyle.border, headerstyle.border = Border(bottom=bd, right=bd, top=bd, left=bd)
+        cellstyle.border = Border(bottom=bd, right=bd, top=bd, left=bd)
+        headerstyle.border = Border(bottom=bd, right=bd, top=bd, left=bd)
         header_labels = ['#', 'Value', 'Units']
         header = []
         for el in header_labels:
