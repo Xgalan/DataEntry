@@ -4,6 +4,7 @@ import csv
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import NamedStyle, Font, Border, Side
+from openpyxl.chart import BarChart, Series, Reference
 
 from model import Model
 from tableutils import Table
@@ -57,9 +58,11 @@ class Controller:
 
     def export_xlsx(self, filename):
         um = self.units.description
-        data = [(i,v,um) for (i,v) in enumerate(self.values)]
+        data = [(i+1,v,um) for (i,v) in enumerate(self.values)]
         wb = Workbook(write_only = True)
         ws = wb.create_sheet()
+        cs = wb.create_chartsheet()
+        chart1 = BarChart()
         cellstyle = NamedStyle(name="highlight")
         headerstyle = NamedStyle(name='headercell')
         wb.add_named_style(cellstyle)
