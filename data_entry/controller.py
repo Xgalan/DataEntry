@@ -61,8 +61,7 @@ class Controller:
         data = [(i+1,v,um) for (i,v) in enumerate(self.values)]
         wb = Workbook(write_only = True)
         ws = wb.create_sheet()
-        cs = wb.create_chartsheet()
-        chart1 = BarChart()
+        # create some styles
         cellstyle = NamedStyle(name="highlight")
         headerstyle = NamedStyle(name='headercell')
         wb.add_named_style(cellstyle)
@@ -73,12 +72,14 @@ class Controller:
         cellstyle.border = Border(bottom=bd, right=bd, top=bd, left=bd)
         headerstyle.border = Border(bottom=bd, right=bd, top=bd, left=bd)
         header_labels = ['#', 'Value', 'Units']
+        # write header
         header = []
         for el in header_labels:
             cell = WriteOnlyCell(ws, value=el)
             cell.style = 'headercell'
             header.append(cell)
         ws.append(header)
+        # write data
         for t in data:
             row = []
             for el in t:
@@ -86,4 +87,16 @@ class Controller:
                 cell.style = 'highlight'
                 row.append(cell)
             ws.append(row)
+        # chart creation
+        chart1 = BarChart()
+        chart1.type = "col"
+        chart1.title = "values"
+        chart1.y_axis.title = 'Sample value'
+        chart1.x_axis.title = 'Sample number'
+        chart1.legend = None
+        data = Reference(ws, min_col=2, min_row=1, max_col=2, max_row=100)
+        sample_nr = Reference(ws, min_col=1, min_row=2, max_row=100)
+        chart1.add_data(data, titles_from_data=True)
+        chart1.set_categories(sample_nr)
+        ws.add_chart(chart1, "E5")
         wb.save(filename) # doctest: +SKIP
