@@ -124,7 +124,13 @@ class Application(tk.Frame):
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
+        unit_precision = subject.units.precision
+        settings_precision = self.precision.get()
+        if settings_precision != unit_precision:
+            #TODO Model precision setter
+            subject.units.precision = settings_precision
         try:
+            #TODO case if value is zero i.e., "0.00"
             last_val = round(subject.values[-1], subject.units.precision)
             self.last_value.set(str(last_val) + ' ' + subject.units.units)
         except IndexError:
