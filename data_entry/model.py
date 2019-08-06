@@ -23,10 +23,10 @@ class Subject(object):
 class UnitRegistry:
     ''' Represent the units of measurement of the model. '''
     units_of_measurement = {
-        'um': { 'description': 'Micrometer', 'precision': 2 },
-        'mm': { 'description': 'Millimeter', 'precision': 2 },
-        'cm': { 'description': 'Centimeter', 'precision': 2 },
-        'm': { 'description': 'Meter', 'precision': 2 },
+        'um': { 'description': 'Micrometer', },
+        'mm': { 'description': 'Millimeter', },
+        'cm': { 'description': 'Centimeter', },
+        'm': { 'description': 'Meter', },
         }
 
     def __init__(self, units='mm'):
@@ -45,7 +45,6 @@ class UnitRegistry:
             if value in self.units_of_measurement:
                 self._units = value
                 self.description = self.units_of_measurement[value]['description']
-                self.precision = self.units_of_measurement[value]['precision']
         else:
             raise ValueError('The name of the unit of measurement is invalid.')
 
@@ -54,7 +53,6 @@ class UnitRegistry:
             __class__=self.__class__,
             _units_str=self.units,
             _description_str=self.description,
-            _precision_str=str(self.precision),
             **self.__dict__)
 
 
@@ -65,6 +63,7 @@ class Model(Subject):
     def __init__(self, values=[], offset=0):
         Subject.__init__(self)
         self._units = UnitRegistry()
+        self._precision = 2
 
         try:
             if isinstance(values, list):
@@ -97,6 +96,18 @@ class Model(Subject):
             raise TypeError
 
     @property
+    def precision(self):
+        return self._precision
+
+    @precision.setter
+    def precision(self, value):
+        if isinstance(value, int):
+            self._precision = value
+            self.notify()
+        else:
+            raise TypeError('precision must be of int type')
+
+    @property
     def offset(self):
         return self._offset
 
@@ -127,13 +138,13 @@ class Model(Subject):
 
     def min(self):
         if self.values:
-            return round(min(self.values), self.units.precision)
+            return round(min(self.values), self.precision)
         else:
             return 0.0
 
     def max(self):
         if self.values:
-            return round(max(self.values), self.units.precision)
+            return round(max(self.values), self.precision)
         else:
             return 0.0
 

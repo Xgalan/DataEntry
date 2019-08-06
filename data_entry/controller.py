@@ -36,6 +36,9 @@ class Controller:
     def set_units(self, units):
         self._model.units = units
 
+    def set_precision(self, value):
+        self._model.precision = value
+
     @property
     def stats(self):
         return Stats(self.values)

@@ -75,8 +75,6 @@ class Application(tk.Frame):
         self.min_max_var = tk.StringVar(value='- - - - - -')
         self.min_max_var.default = '- - - - - -'
         self.count_var = tk.StringVar(value='Count: 0')
-        self.precision = tk.IntVar()
-        self.precision.set(2)
         self.min_warning = tk.DoubleVar(0.0)
         self.max_warning = tk.DoubleVar(0.0)
         self.last_value = tk.StringVar(value='- - - - - -')
@@ -124,14 +122,9 @@ class Application(tk.Frame):
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
-        unit_precision = subject.units.precision
-        settings_precision = self.precision.get()
-        if settings_precision != unit_precision:
-            #TODO Model precision setter
-            subject.units.precision = settings_precision
         try:
-            #TODO case if value is zero i.e., "0.00"
-            last_val = round(subject.values[-1], subject.units.precision)
+            #TODO case if first value is zero i.e., "0.00"
+            last_val = round(subject.values[-1], subject.precision)
             self.last_value.set(str(last_val) + ' ' + subject.units.units)
         except IndexError:
             self.last_value.set('No valid value')
@@ -171,14 +164,14 @@ class Application(tk.Frame):
         ''' Open a dialog with choices for unit of measurement '''
         defaults = {
             'units': self.controller.units,
-            'precision': self.precision.get(),
+            'precision': self.controller.precision,
             'min_warning': self.min_warning.get(),
             'max_warning': self.max_warning.get(),
             }
         self.d = SettingsDialog(self, title='Settings', options=defaults)
         if hasattr(self.d, 'settings'):
-            self.controller.set_units = self.d.settings['units']
-            self.precision.set(self.d.settings['precision'])
+            self.controller.set_units(self.d.settings['units'])
+            self.controller.set_precision(int(self.d.settings['precision']))
             self.min_warning.set(self.d.settings['min_warning'])
             self.max_warning.set(self.d.settings['max_warning'])
 
@@ -347,6 +340,7 @@ class Application(tk.Frame):
         self.alert_on_interval.image = self.neutral_icon
         self.controller.set_values([])
         self.controller.set_offset(0.0)
+        self.controller.set_precision(2)
         self.update()
 
     def export_as_csv(self):
