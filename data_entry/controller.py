@@ -91,15 +91,16 @@ class Controller:
                 row.append(cell)
             ws.append(row)
         # chart creation
-        chart1 = BarChart()
+        chart1 = BarChart(gapWidth=10, varyColors=False)
         chart1.type = "col"
-        chart1.title = "values"
-        chart1.y_axis.title = 'Sample value'
+        chart1.title = "Samples"
+        chart1.y_axis.title = 'Sample value (' + self.units.description + ')'
         chart1.x_axis.title = 'Sample number'
         chart1.legend = None
-        data = Reference(ws, min_col=2, min_row=1, max_col=2, max_row=100)
-        sample_nr = Reference(ws, min_col=1, min_row=2, max_row=100)
+        l = len(self.values) + 1
+        data = Reference(ws, min_col=2, min_row=1, max_col=2, max_row=l)
+        sample_nr = Reference(ws, min_col=1, min_row=2, max_row=l)
         chart1.add_data(data, titles_from_data=True)
         chart1.set_categories(sample_nr)
-        ws.add_chart(chart1, "E5")
+        ws.add_chart(chart1, "F5")
         wb.save(filename) # doctest: +SKIP
