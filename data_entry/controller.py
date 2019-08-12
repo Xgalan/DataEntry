@@ -4,7 +4,7 @@ import csv
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import NamedStyle, Font, Border, Side
-from openpyxl.chart import BarChart, Series, Reference
+import pygal
 
 from model import Model
 from tableutils import Table
@@ -59,6 +59,15 @@ class Controller:
                            headers=['Property', 'Value'])
         return tabledata.to_html() + '<hr>' + statstable.to_html()
 
+    def export_svg(self, filename):
+        um = self.units.description
+        # chart creation
+        bar_chart = pygal.Bar()
+        bar_chart.title = "Samples data (" + um + ")"
+        bar_chart.x_labels = map(str, range(1, len(self.values) + 1))
+        bar_chart.add("Sample length (" + um + ")", self.values)
+        bar_chart.render_to_file(filename)
+
     def export_xlsx(self, filename):
         um = self.units.description
         data = [(i+1,v,um) for (i,v) in enumerate(self.values)]
@@ -90,17 +99,4 @@ class Controller:
                 cell.style = 'highlight'
                 row.append(cell)
             ws.append(row)
-        # chart creation
-        chart1 = BarChart(gapWidth=10, varyColors=False)
-        chart1.type = "col"
-        chart1.title = "Samples"
-        chart1.y_axis.title = 'Sample value (' + self.units.description + ')'
-        chart1.x_axis.title = 'Sample number'
-        chart1.legend = None
-        l = len(self.values) + 1
-        data = Reference(ws, min_col=2, min_row=1, max_col=2, max_row=l)
-        sample_nr = Reference(ws, min_col=1, min_row=2, max_row=l)
-        chart1.add_data(data, titles_from_data=True)
-        chart1.set_categories(sample_nr)
-        ws.add_chart(chart1, "F5")
         wb.save(filename) # doctest: +SKIP

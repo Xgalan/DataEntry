@@ -32,6 +32,7 @@ setuptools.setup(
 
     install_requires=[
         "openpyxl==2.6.2",
+        "pygal==2.4.0",
         ],
 
     classifiers=[

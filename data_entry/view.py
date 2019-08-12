@@ -180,7 +180,7 @@ class Application(tk.Frame):
         self.menu.grid(row=0, sticky='NWE')
         # button for statistics dialog
         self.stats_btn = tk.Button(self.menu, image=self.chart_icon,
-                                   command=self.export_as_xlsx)
+                                   command=self.view_stats)
         self.stats_btn.image = self.chart_icon
         self.stats_btn.grid(row=1, column=0, sticky=tk.E)
         # copy to clipboard
@@ -189,9 +189,9 @@ class Application(tk.Frame):
                                           image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
         self.copy_to_clip_btn.grid(row=1, column=1)
-        # save to CSV button
+        # save to file button
         self.save_btn = tk.Button(self.menu,
-                                  command=self.export_as_csv,
+                                  command=self.export_as,
                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=1, column=2, sticky=tk.E)
@@ -221,7 +221,7 @@ class Application(tk.Frame):
         tooltip.Tooltip(self.quit, text='Quit')
         tooltip.Tooltip(self.minimize, text='Minimize')
         tooltip.Tooltip(self.stats_btn, text='View offline statistics...')
-        tooltip.Tooltip(self.save_btn, text='Save to CSV...')
+        tooltip.Tooltip(self.save_btn, text='Save as...')
         tooltip.Tooltip(self.settings_btn, text='Settings...')
         tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
         tooltip.Tooltip(self.data_entry_clear, text='Reset')
@@ -342,25 +342,22 @@ class Application(tk.Frame):
         self.controller.set_precision(2)
         self.update()
 
-    def export_as_csv(self):
-        ''' export as a CSV file the content of the editor. '''
-        text = self.get_editor_content()
-        #TODO: check if 'offset' is selected
-        if text is not None:
-            filename = filedialog.asksaveasfilename(initialdir="/%HOME",
-                                                    title="Export to CSV file",
-                                                    filetypes=(("CSV files", "*.csv"),
-                                                               ("all files", "*.*")))
-            self.controller.export_to_csv(filename)
-    
-    def export_as_xlsx(self):
-        ''' export as xlsx file '''
+    def export_as(self):
+        ''' save as a file '''
         if self.controller.values:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
-                                                    title="Export to XLSX file",
+                                                    title="Export to file",
+                                                    defaultextension=".xlsx",
                                                     filetypes=(("XLSX files", "*.xlsx"),
+                                                               ("SVG files", "*.svg"),
+                                                               ("CSV files", "*.csv"),
                                                                ("all files", "*.*")))
-            self.controller.export_xlsx(filename)
+            if filename.endswith('.svg'):
+                self.controller.export_svg(filename)
+            elif filename.endswith('.csv'):
+                self.controller.export_to_csv(filename)
+            else:
+                self.controller.export_xlsx(filename)
 
     def view_stats(self):
         ''' View offline statistics '''
