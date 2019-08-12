@@ -122,10 +122,24 @@ class Application(tk.Frame):
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
+        min_v = self.min_warning.get()
+        max_v = self.max_warning.get()
         try:
             #TODO case if first value is zero i.e., "0.00"
             last_val = round(subject.values[-1], subject.precision)
             self.last_value.set(str(last_val) + ' ' + subject.units.units)
+            if last_val >= min_v and last_val <= max_v:
+                self.warning_label.configure(image=self.green_icon)
+                self.warning_label.image = self.green_icon
+            else:
+                self.warning_label.configure(image=self.yellow_icon)
+                self.warning_label.image = self.yellow_icon
+            if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
+                self.alert_on_interval.configure(image=self.yellow_icon)
+                self.alert_on_interval.image = self.yellow_icon
+            else:
+                self.alert_on_interval.configure(image=self.green_icon)
+                self.alert_on_interval.image = self.green_icon
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -143,22 +157,7 @@ class Application(tk.Frame):
     def update_model_values(self, *args):
         text = self.get_editor_content()
         if text is not None:
-            self.controller.set_values(text.splitlines())
-            lastv = self.controller.values[-1]
-            min_v = self.min_warning.get()
-            max_v = self.max_warning.get()
-            if lastv >= min_v and lastv <= max_v:
-                self.warning_label.configure(image=self.green_icon)
-                self.warning_label.image = self.green_icon
-            else:
-                self.warning_label.configure(image=self.yellow_icon)
-                self.warning_label.image = self.yellow_icon
-            if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
-                self.alert_on_interval.configure(image=self.yellow_icon)
-                self.alert_on_interval.image = self.yellow_icon
-            else:
-                self.alert_on_interval.configure(image=self.green_icon)
-                self.alert_on_interval.image = self.green_icon
+            self.controller.set_values(text.splitlines())            
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
