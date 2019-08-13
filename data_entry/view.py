@@ -19,10 +19,10 @@ class SettingsDialog(dialog.Dialog):
         tk.Label(master, anchor=tk.W, text='Precision').grid(
                      row=1, sticky=tk.W)
         tk.Label(master, anchor=tk.W,
-                 text='Min. warning').grid(
+                 text='Min. tolerance').grid(
                      row=2, sticky=tk.W)
         tk.Label(master, anchor=tk.W,
-                 text='Max. warning').grid(
+                 text='Max. tolerance').grid(
                      row=3, sticky=tk.W)
         [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
         self.e1.insert(0, self.options['units'])
@@ -117,13 +117,13 @@ class Application(tk.Frame):
         except AttributeError:
             return
 
-    def update_values(self, subject):
+    def update_from_subject(self, subject):
         ''' observer pattern '''
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
-        min_v = self.min_warning.get()
-        max_v = self.max_warning.get()
+        min_v = subject.tolerance['min']
+        max_v = subject.tolerance['max']
         try:
             #TODO case if first value is zero i.e., "0.00"
             last_val = round(subject.values[-1], subject.precision)
@@ -157,22 +157,24 @@ class Application(tk.Frame):
     def update_model_values(self, *args):
         text = self.get_editor_content()
         if text is not None:
-            self.controller.set_values(text.splitlines())            
+            self.controller.set_values(text.splitlines())
 
     def settings_dialog(self):
         ''' Open a dialog with choices for unit of measurement '''
         defaults = {
             'units': self.controller.units,
             'precision': self.controller.precision,
-            'min_warning': self.min_warning.get(),
-            'max_warning': self.max_warning.get(),
+            'min_warning': self.controller.tolerance['min'],
+            'max_warning': self.controller.tolerance['max'],
             }
         self.d = SettingsDialog(self, title='Settings', options=defaults)
         if hasattr(self.d, 'settings'):
             self.controller.set_units(self.d.settings['units'])
             self.controller.set_precision(int(self.d.settings['precision']))
-            self.min_warning.set(self.d.settings['min_warning'])
-            self.max_warning.set(self.d.settings['max_warning'])
+            self.controller.set_tolerance(
+                {'min': float(self.d.settings['min_warning']),
+                 'max': float(self.d.settings['max_warning'])
+                 })
 
     def create_widgets(self):
         # menu
@@ -340,6 +342,7 @@ class Application(tk.Frame):
         self.controller.set_values([])
         self.controller.set_offset(0.0)
         self.controller.set_precision(2)
+        self.controller.set_tolerance = {"min": 0.0, "max": 0.0}
         self.update()
 
     def export_as(self):

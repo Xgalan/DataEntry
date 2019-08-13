@@ -39,6 +39,9 @@ class Controller:
     def set_precision(self, value):
         self._model.precision = value
 
+    def set_tolerance(self, tolerance):
+        self._model.tolerance = tolerance
+
     @property
     def stats(self):
         return Stats(self.values)

@@ -17,7 +17,7 @@ class Subject(object):
     def notify(self, modifier=None):
         for observer in self._observers:
             if modifier != observer:
-                observer.update_values(self)
+                observer.update_from_subject(self)
 
 
 class UnitRegistry:
@@ -64,7 +64,7 @@ class Model(Subject):
         Subject.__init__(self)
         self._units = UnitRegistry()
         self._precision = 2
-
+        self._tolerance = {"min": 0.0, "max": 0.0}
         try:
             if isinstance(values, list):
                 self._values = values
@@ -106,6 +106,31 @@ class Model(Subject):
             self.notify()
         else:
             raise TypeError('precision must be of int type')
+
+    @property
+    def tolerance(self):
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, tolerance):
+        try:
+            if isinstance(tolerance, dict):
+                if 'min' in tolerance and 'max' in tolerance:
+                    if isinstance(tolerance['min'], (int, float)) and isinstance(
+                        tolerance['max'], (int, float)):
+                        if tolerance['min'] <= tolerance['max']:
+                            self._tolerance = tolerance                    
+                            self.notify()
+                        else:
+                            raise ValueError
+                else:
+                    raise TypeError
+            else:
+                raise TypeError
+        except TypeError:
+            print("tolerance must be a dict containing keywords 'min', 'max'")
+        except ValueError:
+            print("min tolerance must be minor or equal to max tolerance!")
 
     @property
     def offset(self):
