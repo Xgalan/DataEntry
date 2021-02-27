@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 import string
-import lzma
-import base64
 import tkinter as tk
-from tkinter import messagebox, filedialog
-import webbrowser
+from tkinter import messagebox, filedialog, ttk
 
 import icons
 import tooltip
@@ -14,16 +11,12 @@ import dialog
 
 class SettingsDialog(dialog.Dialog):
     def body(self, master):
-        tk.Label(master, anchor=tk.W, text='Units').grid(
-                     row=0, sticky=tk.W)
-        tk.Label(master, anchor=tk.W, text='Precision').grid(
-                     row=1, sticky=tk.W)
-        tk.Label(master, anchor=tk.W,
-                 text='Min. tolerance').grid(
-                     row=2, sticky=tk.W)
-        tk.Label(master, anchor=tk.W,
-                 text='Max. tolerance').grid(
-                     row=3, sticky=tk.W)
+        ttk.Label(master, anchor=tk.W, text='Units').grid(row=0, sticky=tk.W)
+        ttk.Label(master, anchor=tk.W, text='Precision').grid(row=1, sticky=tk.W)
+        ttk.Label(master, anchor=tk.W,
+                  text='Min. tolerance').grid(row=2, sticky=tk.W)
+        ttk.Label(master, anchor=tk.W,
+                  text='Max. tolerance').grid(row=3, sticky=tk.W)
         [setattr(self, 'e' + str(r), tk.Entry(master)) for r in range(1,5)]
         self.e1.insert(0, self.options['units'])
         self.e2.insert(0, self.options['precision'])
@@ -55,7 +48,7 @@ class SettingsDialog(dialog.Dialog):
             }
 
 
-class Application(tk.Frame):
+class Application(ttk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         # icons
@@ -85,7 +78,7 @@ class Application(tk.Frame):
         self.create_widgets()
 
     def quit_dialog(self):
-        if self.data_entry.edit_modified() is 1:
+        if self.data_entry.edit_modified() == 1:
             answer = messagebox.askokcancel("Quit","Do you want to quit?")
             if answer:
                 self.master.destroy()
@@ -104,9 +97,9 @@ class Application(tk.Frame):
     def flasher(self, widget, color):
         ''' Change the background color of a widget for 100ms. '''
         def change_color(widget, color):
-            widget.config(bg=color)
+            widget.config(background=color)
 
-        orig_color = widget.cget('bg')
+        orig_color = widget.cget('background')
         self.count_label.after(10, change_color, widget, color)
         self.count_label.after(210, change_color, widget, orig_color)
 
@@ -178,45 +171,45 @@ class Application(tk.Frame):
 
     def create_widgets(self):
         # menu
-        self.menu = tk.Frame(self, padx=2, pady=3, bd=1, relief=tk.RAISED)
+        self.menu = ttk.Frame(self, padding=(2, 3), borderwidth=1, relief=tk.RAISED)
         self.menu.grid(row=0, sticky='NWE')
         # button for statistics dialog
-        self.stats_btn = tk.Button(self.menu, image=self.chart_icon,
-                                   command=self.view_stats)
+        self.stats_btn = ttk.Button(self.menu, image=self.chart_icon,
+                                    command=self.view_stats)
         self.stats_btn.image = self.chart_icon
         self.stats_btn.grid(row=1, column=0, sticky=tk.E)
         # copy to clipboard
-        self.copy_to_clip_btn = tk.Button(self.menu,
-                                          command=self.cp_to_clipboard,
-                                          image=self.copy_icon)
+        self.copy_to_clip_btn = ttk.Button(self.menu,
+                                           command=self.cp_to_clipboard,
+                                           image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
         self.copy_to_clip_btn.grid(row=1, column=1)
         # save to file button
-        self.save_btn = tk.Button(self.menu,
-                                  command=self.export_as,
-                                  image=self.save_icon)
+        self.save_btn = ttk.Button(self.menu,
+                                   command=self.export_as,
+                                   image=self.save_icon)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=1, column=2, sticky=tk.E)
         # reset data entry button
-        self.data_entry_clear = tk.Button(self.menu,
-                                          command=self.clear_data_entry,
-                                          image=self.delete_icon)
+        self.data_entry_clear = ttk.Button(self.menu,
+                                           command=self.clear_data_entry,
+                                           image=self.delete_icon)
         self.data_entry_clear.image = self.delete_icon
         self.data_entry_clear.grid(row=1, column=3, sticky=tk.E)
         # settings button
-        self.settings_btn = tk.Button(self.menu,
-                                      command=self.settings_dialog,
-                                      image=self.options_icon)
+        self.settings_btn = ttk.Button(self.menu,
+                                       command=self.settings_dialog,
+                                       image=self.options_icon)
         self.settings_btn.image = self.options_icon
         self.settings_btn.grid(row=1, column=4, sticky=tk.E)
         # quit button
-        self.quit = tk.Button(self.menu, image=self.quit_icon,
-                              command=self.quit_dialog)
+        self.quit = ttk.Button(self.menu, image=self.quit_icon,
+                               command=self.quit_dialog)
         self.quit.image = self.quit_icon
         self.quit.grid(row=0, column=4, sticky=tk.E)
         # minimize to tray button
-        self.minimize = tk.Button(self.menu, image=self.minimize_icon,
-                                  command=self.master.wm_iconify)
+        self.minimize = ttk.Button(self.menu, image=self.minimize_icon,
+                                   command=self.master.wm_iconify)
         self.minimize.image = self.minimize_icon
         self.minimize.grid(row=0, column=3, sticky=tk.E)
         # tooltips
@@ -228,9 +221,11 @@ class Application(tk.Frame):
         tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
         tooltip.Tooltip(self.data_entry_clear, text='Reset')
         # editor
-        self.editor = tk.Frame(self, bd=1, relief=tk.FLAT)
+        self.editor = ttk.Frame(self)
+        self.editor['borderwidth'] = 1
+        self.editor['relief'] = tk.FLAT
         self.editor.grid(row=1, padx=2, pady=2, sticky=tk.W+tk.E)
-        self.scrollbar = tk.Scrollbar(self.editor)
+        self.scrollbar = ttk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, pady=1, sticky="NS")
         self.data_entry = tk.Text(self.editor, width=22,
                                   yscrollcommand=self.scrollbar.set)
@@ -239,39 +234,38 @@ class Application(tk.Frame):
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
         # editor menu frame
-        self.editor_menu = tk.Frame(self.editor)
+        self.editor_menu = ttk.Frame(self.editor)
         self.editor_menu.grid(row=1, columnspan=3, pady=2, sticky=tk.W+tk.E)
 
         # model elements count
-        self.count_label = tk.Label(self.editor_menu, bg='white',
-                                    width=16, bd=1, relief=tk.SUNKEN,
-                                    font=("Helvetica", 11, "bold"),
-                                    textvariable=self.count_var)
+        self.count_label = ttk.Label(self.editor_menu, background='white',
+                                     width=16, borderwidth=1, relief=tk.SUNKEN,
+                                     font=("Helvetica", 11, "bold"),
+                                     textvariable=self.count_var)
         self.count_label.grid(row=0, column=0, padx=1, pady=1)
         # good/warning icon
-        self.warning_label = tk.Label(self.editor_menu,
-                                      image=self.neutral_icon)
+        self.warning_label = ttk.Label(self.editor_menu,
+                                       image=self.neutral_icon)
         self.warning_label.grid(row=1, column=2, padx=4)
-        self.last_value_with_offset = tk.Label(self.editor_menu, bg='white',
-                                               width=16, bd=1, relief=tk.SUNKEN,
-                                               font=("Helvetica", 11, "bold"),
-                                               textvariable=self.last_value)
+        self.last_value_with_offset = ttk.Label(self.editor_menu, background='white',
+                                                width=16, borderwidth=1, relief=tk.SUNKEN,
+                                                font=("Helvetica", 11, "bold"),
+                                                textvariable=self.last_value)
         self.last_value_with_offset.grid(row=1, padx=1, pady=1, sticky=tk.W)
         tooltip.Tooltip(self.last_value_with_offset, text='Last value')
         # min - max values
-        self.copy_preview = tk.Label(self.editor_menu,
-                                     textvariable=self.min_max_var, bg='white',
-                                     font=("Helvetica", 11, "bold"), bd=1,
-                                     relief=tk.SUNKEN)
+        self.copy_preview = ttk.Label(self.editor_menu,
+                                      textvariable=self.min_max_var, background='white',
+                                      font=("Helvetica", 11, "bold"), borderwidth=1,
+                                      relief=tk.SUNKEN)
         self.copy_preview.grid(row=2, columnspan=2, padx=1, pady=2,
                                sticky=tk.W+tk.E)
         tooltip.Tooltip(self.copy_preview, text='Min - Max interval')
-        self.alert_on_interval = tk.Label(self.editor_menu,
-                                          image=self.neutral_icon)
+        self.alert_on_interval = ttk.Label(self.editor_menu,
+                                           image=self.neutral_icon)
         self.alert_on_interval.grid(row=2, column=2, padx=4)
         # options group frame
-        self.options = tk.LabelFrame(self, text="Options",
-                                     font=("Helvetica", 9))
+        self.options = ttk.LabelFrame(self, text="Options")
         self.options.grid(row=3, padx=4, pady=4, sticky=tk.W+tk.E)
         # measure offset - accepts a positive or negative number
         self.offset_checkbutton = tk.Checkbutton(self.options, text='Offset',
@@ -279,16 +273,15 @@ class Application(tk.Frame):
                                                  command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, pady=2, sticky=tk.W)
         # offset entry with validation
-        self.change_sign = tk.Button(self.options, text='+/-',
-                                     font=("Helvetica", 9, "bold"),
-                                     command=self.change_value_sign)
+        self.change_sign = ttk.Button(self.options, text='+/-',
+                                      command=self.change_value_sign,
+                                      width=4)
         self.change_sign.grid(row=0, column=1, padx=1, pady=2, sticky=tk.E)
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
-        self.offset_entry = tk.Entry(self.options, width=8,
-                                     font=("Helvetica", 10),
-                                     validate='key',
-                                     validatecommand=(self._validate_num,
-                                                      '%S', '%P'))
+        self.offset_entry = ttk.Entry(self.options, width=8,
+                                      validate='key',
+                                      validatecommand=(self._validate_num,
+                                                       '%S', '%P'))
         self.offset_entry.grid(row=0, column=2, padx=1, pady=2, sticky=tk.E)
 
         # window resizing
@@ -342,7 +335,7 @@ class Application(tk.Frame):
         self.controller.set_values([])
         self.controller.set_offset(0.0)
         self.controller.set_precision(2)
-        self.controller.set_tolerance = {"min": 0.0, "max": 0.0}
+        self.controller.set_tolerance({"min": 0.0, "max": 0.0})
         self.update()
 
     def export_as(self):
@@ -364,8 +357,4 @@ class Application(tk.Frame):
 
     def view_stats(self):
         ''' View offline statistics '''
-        url = 'https://itty.bitty.site/#/'+base64.b64encode(
-            lzma.compress(
-                bytes(self.controller.export_to_html(), encoding="utf-8"),
-                format=lzma.FORMAT_ALONE, preset=9)).decode("utf-8")
-        webbrowser.open(url, new=2)
+        pass

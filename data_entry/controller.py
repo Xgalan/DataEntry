@@ -7,7 +7,6 @@ from openpyxl.styles import NamedStyle, Font, Border, Side
 import pygal
 
 from model import Model
-from tableutils import Table
 from statsutils import Stats
 
 
@@ -53,14 +52,6 @@ class Controller:
             exported_file.writerow(['Value', 'Units'])
             [exported_file.writerow([str(line), um]) for line in
              self.values]
-
-    def export_to_html(self):
-        um = self.units.description
-        tabledata = Table(data=[(i,v,um) for (i,v) in enumerate(self.values)],
-                          headers=['#', 'Value', 'Units'])
-        statstable = Table(data=self.stats.describe(format='list'),
-                           headers=['Property', 'Value'])
-        return tabledata.to_html() + '<hr>' + statstable.to_html()
 
     def export_svg(self, filename):
         um = self.units.description
