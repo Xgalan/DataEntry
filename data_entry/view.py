@@ -194,7 +194,7 @@ class MainFrame(ttk.Frame):
             if self.offset_option.get() is True:
                 self.controller.set_offset(float(self.offset_entry.get()))
             else:
-                self.controller.offset = 0.0
+                self.controller.set_offset(0.0)
             return self.offset_option.get()
         except ValueError:
             return
@@ -319,10 +319,10 @@ class MainFrame(ttk.Frame):
         offset_val = self.offset_entry.get()
         if offset_val.find('-', 0, 1) != -1:
             self.offset_entry.delete(0, 1)
-            self.offset_checkbutton.deselect()
+            self.offset_option.set(False)
         else:
             self.offset_entry.insert(0, '-')
-            self.offset_checkbutton.deselect()
+            self.offset_option.set(False)
 
     def cp_to_clipboard(self):
         '''
