@@ -4,7 +4,6 @@ import csv
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import NamedStyle, Font, Border, Side
-import pygal
 
 from model import Model
 from statsutils import Stats
@@ -49,18 +48,9 @@ class Controller:
         um = self.units.description
         with open(filename, 'w', newline='') as csvfile:
             exported_file = csv.writer(csvfile, dialect='excel')
-            exported_file.writerow(['Value', 'Units'])
-            [exported_file.writerow([str(line), um]) for line in
-             self.values]
-
-    def export_svg(self, filename):
-        um = self.units.description
-        # chart creation
-        bar_chart = pygal.Bar()
-        bar_chart.title = "Samples data (" + um + ")"
-        bar_chart.x_labels = map(str, range(1, len(self.values) + 1))
-        bar_chart.add("Sample length (" + um + ")", self.values)
-        bar_chart.render_to_file(filename)
+            exported_file.writerow(['#', 'Value', 'Units'])
+            [exported_file.writerow([i+1, str(line), um]) for (i,line) in
+             enumerate(self.values)]
 
     def export_xlsx(self, filename):
         um = self.units.description

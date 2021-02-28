@@ -361,12 +361,9 @@ class MainFrame(ttk.Frame):
                                                     title="Export to file",
                                                     defaultextension=".xlsx",
                                                     filetypes=(("XLSX files", "*.xlsx"),
-                                                               ("SVG files", "*.svg"),
                                                                ("CSV files", "*.csv"),
                                                                ("all files", "*.*")))
-            if filename.endswith('.svg'):
-                self.controller.export_svg(filename)
-            elif filename.endswith('.csv'):
+            if filename.endswith('.csv'):
                 self.controller.export_to_csv(filename)
             else:
                 self.controller.export_xlsx(filename)
