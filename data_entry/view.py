@@ -21,8 +21,6 @@ def validate_number(*args):
 class RibbonFrame(ttk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        self.units = tk.StringVar(value='mm')
-        self.precision = tk.IntVar(value=2)
         # validation callbacks
         self._validate_num = self.register(validate_number)
         # icons
@@ -34,12 +32,6 @@ class RibbonFrame(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
         self.__create_widgets()
-    
-    def __set_units(self, event):
-        self.master.controller.set_units(self.units_cb.get())
-    
-    def __set_precision(self, event):
-        self.master.controller.set_precision(int(self.precision.get()))
 
     def __create_widgets(self):
         # big buttons
@@ -62,25 +54,8 @@ class RibbonFrame(ttk.Frame):
             image=self.save_icon, command=self.master.export_as)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=2, padx=1, pady=2)
-        # units of measurements settings
-        self.um_options = ttk.Frame(self)
-        self.um_options.grid(row=1, column=0, sticky=tk.W+tk.E)
-        self.units_cb = ttk.Combobox(
-            self.um_options, textvariable=self.units, state='readonly',
-            values=['mm', 'um', 'cm', 'm']
-        )
-        self.units_cb.bind('<<ComboboxSelected>>', self.__set_units)
-        self.units_cb.grid(row=0, column=0, padx=2, pady=2, sticky=tk.N+tk.W)
-        self.precision_e = ttk.Entry(
-            self.um_options, textvariable=self.precision, validate='key',
-            validatecommand=(self._validate_num, '%S', '%P'), width=4
-        )
-        self.precision_e.bind('<Return>', self.__set_precision)
-        self.precision_e.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
         # tooltips
         tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
-        tooltip.Tooltip(self.units_cb, text='Choose unit of measurement')
-        tooltip.Tooltip(self.precision_e, text='Enter decimals')
         tooltip.Tooltip(self.data_entry_clear, text='Reset')
         tooltip.Tooltip(self.save_btn, text='Save as...')
 
@@ -100,12 +75,24 @@ class MainFrame(ttk.Frame):
         self.min_warning = tk.DoubleVar(0.0)
         self.max_warning = tk.DoubleVar(0.0)
         self.last_value = tk.StringVar(value='- - - - - -')
+        self.units = tk.StringVar(value='mm')
+        self.precision = tk.IntVar(value=2)
         # validation callbacks
         self._validate_num = self.register(validate_number)
         # create graphics
         self.grid_columnconfigure(0, weight=1)
         self.grid()
+        # configure style
+        self.style = ttk.Style(self)
+        self.style.configure('Bold.TButton', font=('Helvetica', 9, 'bold'), padding=(0, 0))
+
         self.__create_widgets()
+
+    def __set_units(self, event):
+        self.controller.set_units(self.units_cb.get())
+    
+    def __set_precision(self, event):
+        self.controller.set_precision(int(self.precision.get()))
 
     def validate_number(self, *args):
         list_of_num = list(string.digits)
@@ -266,13 +253,30 @@ class MainFrame(ttk.Frame):
                                                   command=self.offset_cback)
         self.offset_checkbutton.grid(row=3, column=0, padx=4, pady=3, sticky=tk.W)
         # offset entry with validation
-        self.change_sign = ttk.Button(self.options, text='+/-',
+        self.change_sign = ttk.Button(self.options, text='+ -', style='Bold.TButton',
                                       command=self.change_value_sign, width=4)
         self.change_sign.grid(row=3, column=1, padx=0, pady=3, sticky=tk.E)
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
         self.offset_entry = ttk.Entry(self.options, width=10, validate='key',
                                       validatecommand=(self._validate_num, '%S', '%P'))
         self.offset_entry.grid(row=3, column=2, padx=4, pady=3, sticky=tk.E)
+        # units of measurements settings
+        self.um_options = ttk.Frame(self.options)
+        self.um_options.grid(row=4, columnspan=3, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.units_cb = ttk.Combobox(
+            self.um_options, textvariable=self.units, state='readonly',
+            values=['mm', 'um', 'cm', 'm']
+        )
+        self.units_cb.bind('<<ComboboxSelected>>', self.__set_units)
+        self.units_cb.grid(row=0, column=0, padx=2, pady=2, sticky=tk.N+tk.W)
+        self.precision_e = ttk.Entry(
+            self.um_options, textvariable=self.precision, validate='key',
+            validatecommand=(self._validate_num, '%S', '%P'), width=4
+        )
+        self.precision_e.bind('<Return>', self.__set_precision)
+        self.precision_e.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
+        tooltip.Tooltip(self.units_cb, text='Choose unit of measurement')
+        tooltip.Tooltip(self.precision_e, text='Enter decimals')
 
     def get_editor_content(self):
         ''' check if the editor is empty or return the content. '''
