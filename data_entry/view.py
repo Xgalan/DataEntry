@@ -218,63 +218,79 @@ class MainFrame(ttk.Frame):
                                            image=self.neutral_icon)
         self.alert_on_interval.grid(row=2, column=1, padx=4)
 
+        # dimensions group
+        self.dimensions = ttk.LabelFrame(self, text="Dimensions")
+        self.dimensions.columnconfigure(0, weight=1)
+        self.dimensions.columnconfigure(1, weight=2)
+        self.dimensions.columnconfigure(2, weight=2)
+        self.dimensions.grid(row=4, padx=4, pady=4, sticky=tk.W+tk.E)
+
+        # min/max allowed dimensions
+        self.min_dim_label = ttk.Label(
+            self.dimensions, anchor=tk.W, text='Min.'
+        )
+        self.min_dim_label.grid(row=0, column=1, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.min_nominal_label = ttk.Label(
+            self.dimensions, anchor=tk.W, text='Nominal:'
+        )
+        self.min_nominal_label.grid(row=1, column=0, pady=3)
+        self.max_dim_label = ttk.Label(
+            self.dimensions, anchor=tk.W, text='Max.'
+        )
+        self.max_dim_label.grid(row=0, column=2, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.min_dim = ttk.Entry(
+            self.dimensions, width=12, validate='key',
+            validatecommand=(self._validate_num, '%S', '%P'),
+            textvariable=self.min_warning
+        )
+        self.min_dim.grid(row=1, column=1, padx=2, pady=3, sticky=tk.E)
+        self.max_dim = ttk.Entry(
+            self.dimensions, width=12, validate='key',
+            validatecommand=(self._validate_num, '%S', '%P'),
+            textvariable=self.max_warning
+        )
+        self.max_dim.grid(row=1, column=2, padx=2, pady=3, sticky=tk.E)
+        tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
+        tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
+
+
         # measure options group frame
         self.options = ttk.LabelFrame(self, text="Options")
         self.options.columnconfigure(0, weight=1)
         self.options.columnconfigure(1, weight=1)
         self.options.columnconfigure(2, weight=2)
-        self.options.grid(row=4, padx=4, pady=4, sticky=tk.W+tk.E)
-        # min/max allowed dimensions
-        self.min_dim_label = ttk.Label(
-            self.options, anchor=tk.W, text='Min. dimension'
-        )
-        self.min_dim_label.grid(row=1, column=0, padx=4, pady=3, sticky=tk.W)
-        self.max_dim_label = ttk.Label(
-            self.options, anchor=tk.W, text='Max. dimension'
-        )
-        self.max_dim_label.grid(row=2, column=0, padx=4, pady=3, sticky=tk.W)
-        self.min_dim = ttk.Entry(
-            self.options, width=10, validate='key',
-            validatecommand=(self._validate_num, '%S', '%P'),
-            textvariable=self.min_warning
-        )
-        self.min_dim.grid(row=1, column=2, padx=4, pady=3, sticky=tk.E)
-        self.max_dim = ttk.Entry(
-            self.options, width=10, validate='key',
-            validatecommand=(self._validate_num, '%S', '%P'),
-            textvariable=self.max_warning
-        )
-        self.max_dim.grid(row=2, column=2, padx=4, pady=3, sticky=tk.E)
-        tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
-        tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
+        self.options.grid(row=5, padx=4, pady=4, sticky=tk.W+tk.E)
+        
         # measure offset - accepts a positive or negative number
         self.offset_checkbutton = ttk.Checkbutton(self.options, text='Offset',
                                                   variable=self.offset_option,
                                                   command=self.offset_cback)
-        self.offset_checkbutton.grid(row=3, column=0, padx=4, pady=3, sticky=tk.W)
+        self.offset_checkbutton.grid(row=0, column=0, padx=4, pady=3, sticky=tk.W)
         # offset entry with validation
         self.change_sign = ttk.Button(self.options, text='+ -', style='Bold.TButton',
                                       command=self.change_value_sign, width=4)
-        self.change_sign.grid(row=3, column=1, padx=0, pady=3, sticky=tk.E)
+        self.change_sign.grid(row=0, column=1, padx=0, pady=3, sticky=tk.E)
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
-        self.offset_entry = ttk.Entry(self.options, width=10, validate='key',
+        self.offset_entry = ttk.Entry(self.options, width=12, validate='key',
                                       validatecommand=(self._validate_num, '%S', '%P'))
-        self.offset_entry.grid(row=3, column=2, padx=4, pady=3, sticky=tk.E)
+        self.offset_entry.grid(row=0, column=2, padx=4, pady=3, sticky=tk.E)
         # units of measurements settings
         self.um_options = ttk.Frame(self.options)
-        self.um_options.grid(row=4, columnspan=3, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.um_options.grid(row=1, columnspan=3, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.um_options_label = ttk.Label(self.um_options, text='Units:')
+        self.um_options_label.grid(row=0, column=0)
         self.units_cb = ttk.Combobox(
             self.um_options, textvariable=self.units, state='readonly',
-            values=['mm', 'um', 'cm', 'm']
+            values=['mm', 'um', 'cm', 'm', 'g']
         )
         self.units_cb.bind('<<ComboboxSelected>>', self.__set_units)
-        self.units_cb.grid(row=0, column=0, padx=2, pady=2, sticky=tk.N+tk.W)
+        self.units_cb.grid(row=0, column=1, padx=2, pady=2, sticky=tk.N+tk.W)
         self.precision_e = ttk.Entry(
             self.um_options, textvariable=self.precision, validate='key',
             validatecommand=(self._validate_num, '%S', '%P'), width=4
         )
         self.precision_e.bind('<Return>', self.__set_precision)
-        self.precision_e.grid(row=0, column=1, padx=2, pady=2, sticky=tk.W)
+        self.precision_e.grid(row=0, column=2, padx=2, pady=2, sticky=tk.W)
         tooltip.Tooltip(self.units_cb, text='Choose unit of measurement')
         tooltip.Tooltip(self.precision_e, text='Enter decimals')
 
