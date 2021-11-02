@@ -27,6 +27,7 @@ class UnitRegistry:
         'mm': { 'description': 'Millimeter', },
         'cm': { 'description': 'Centimeter', },
         'm': { 'description': 'Meter', },
+        'g': { 'description': 'Gram', },
         }
 
     def __init__(self, units='mm'):
