@@ -71,6 +71,10 @@ class MainFrame(ttk.Frame):
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - - -')
         self.min_max_var.default = '- - - - - -'
+        self.actual_min = tk.StringVar(value='- -')
+        self.actual_max = tk.StringVar(value='- -')
+        self.actual_min.default = '- -'
+        self.actual_max.default = '- -'
         self.count_var = tk.StringVar(value='Count: 0')
         self.min_warning = tk.DoubleVar(0.0)
         self.max_warning = tk.DoubleVar(0.0)
@@ -121,27 +125,34 @@ class MainFrame(ttk.Frame):
 
     def update_from_subject(self, subject):
         ''' observer pattern '''
+
+        def set_green_icon(obj_ref):
+            obj_ref.configure(image=self.green_icon)
+            obj_ref.image = self.green_icon
+        
+        def set_yellow_icon(obj_ref):
+            obj_ref.configure(image=self.yellow_icon)
+            obj_ref.image = self.yellow_icon
+
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
         self.min_max_var.set(subject.min_max())
         min_v = subject.tolerance['min']
         max_v = subject.tolerance['max']
+        self.actual_min.set(subject.min()) 
+        self.actual_max.set(subject.max())
         try:
             #TODO case if first value is zero i.e., "0.00"
             last_val = round(subject.values[-1], subject.precision)
             self.last_value.set(str(last_val) + ' ' + subject.units.units)
             if last_val >= min_v and last_val <= max_v:
-                self.warning_label.configure(image=self.green_icon)
-                self.warning_label.image = self.green_icon
+                set_green_icon(self.warning_label)
             else:
-                self.warning_label.configure(image=self.yellow_icon)
-                self.warning_label.image = self.yellow_icon
+                set_yellow_icon(self.warning_label)
             if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
-                self.alert_on_interval.configure(image=self.yellow_icon)
-                self.alert_on_interval.image = self.yellow_icon
+                set_yellow_icon(self.alert_on_interval)
             else:
-                self.alert_on_interval.configure(image=self.green_icon)
-                self.alert_on_interval.image = self.green_icon
+                set_green_icon(self.alert_on_interval)
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -176,7 +187,7 @@ class MainFrame(ttk.Frame):
         self.editor.grid(row=2, column=0, pady=2, sticky=tk.W+tk.E)
         self.scrollbar = ttk.Scrollbar(self.editor)
         self.scrollbar.grid(row=0, column=1, padx=0, pady=1, sticky=tk.N+tk.S)
-        self.data_entry = tk.Text(self.editor, width=26,
+        self.data_entry = tk.Text(self.editor, width=30,
                                   yscrollcommand=self.scrollbar.set)
         self.data_entry.grid(row=0, column=0, padx=0, sticky=tk.W+tk.E)
         # update event on data entry text widget
@@ -227,32 +238,50 @@ class MainFrame(ttk.Frame):
 
         # min/max allowed dimensions
         self.min_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.W, text='Min.'
+            self.dimensions, anchor=tk.CENTER, text='Min.'
+        )
+        self.max_dim_label = ttk.Label(
+            self.dimensions, anchor=tk.CENTER, text='Max.'
         )
         self.min_dim_label.grid(row=0, column=1, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.min_nominal_label = ttk.Label(
-            self.dimensions, anchor=tk.W, text='Nominal:'
-        )
-        self.min_nominal_label.grid(row=1, column=0, pady=3)
-        self.max_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.W, text='Max.'
-        )
         self.max_dim_label.grid(row=0, column=2, padx=4, pady=3, sticky=tk.W+tk.E)
+        # nominal dimensions
+        self.nominal_label = ttk.Label(
+            self.dimensions, anchor=tk.E, text='Nominal:'
+        )
         self.min_dim = ttk.Entry(
-            self.dimensions, width=12, validate='key',
+            self.dimensions, width=10, validate='key',
             validatecommand=(self._validate_num, '%S', '%P'),
-            textvariable=self.min_warning
+            textvariable=self.min_warning,
+            justify=tk.RIGHT
         )
-        self.min_dim.grid(row=1, column=1, padx=2, pady=3, sticky=tk.E)
         self.max_dim = ttk.Entry(
-            self.dimensions, width=12, validate='key',
+            self.dimensions, width=10, validate='key',
             validatecommand=(self._validate_num, '%S', '%P'),
-            textvariable=self.max_warning
+            textvariable=self.max_warning,
+            justify=tk.RIGHT
         )
+        self.nominal_label.grid(row=1, column=0, pady=3, sticky=tk.W+tk.E)
+        self.min_dim.grid(row=1, column=1, padx=2, pady=3, sticky=tk.E)
         self.max_dim.grid(row=1, column=2, padx=2, pady=3, sticky=tk.E)
+        # actual dimensions
+        self.actual_label = ttk.Label(
+            self.dimensions, anchor=tk.E, text='Actual:'
+        )
+        self.actual_label.grid(row=2, column=0, pady=3, sticky=tk.W+tk.E)
+        self.min_entry = ttk.Entry(
+            self.dimensions, width=10, textvariable=self.actual_min,
+            justify=tk.RIGHT, state='readonly'
+        )
+        self.max_entry = ttk.Entry(
+            self.dimensions, width=10, textvariable=self.actual_max,
+            justify=tk.RIGHT, state='readonly'
+        )
+        self.min_entry.grid(row=2, column=1, padx=2, pady=3, sticky=tk.E)
+        self.max_entry.grid(row=2, column=2, padx=2, pady=3, sticky=tk.E)
+        # tooltips
         tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
         tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
-
 
         # measure options group frame
         self.options = ttk.LabelFrame(self, text="Options")
@@ -260,37 +289,37 @@ class MainFrame(ttk.Frame):
         self.options.columnconfigure(1, weight=1)
         self.options.columnconfigure(2, weight=2)
         self.options.grid(row=5, padx=4, pady=4, sticky=tk.W+tk.E)
-        
+
         # measure offset - accepts a positive or negative number
         self.offset_checkbutton = ttk.Checkbutton(self.options, text='Offset',
-                                                  variable=self.offset_option,
+                                                  variable=self.offset_option, width=14,
                                                   command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, column=0, padx=4, pady=3, sticky=tk.W)
         # offset entry with validation
         self.change_sign = ttk.Button(self.options, text='+ -', style='Bold.TButton',
                                       command=self.change_value_sign, width=4)
-        self.change_sign.grid(row=0, column=1, padx=0, pady=3, sticky=tk.E)
-        tooltip.Tooltip(self.change_sign, text='Change offset sign')
-        self.offset_entry = ttk.Entry(self.options, width=12, validate='key',
+        self.offset_entry = ttk.Entry(self.options, width=8, validate='key',
                                       validatecommand=(self._validate_num, '%S', '%P'))
-        self.offset_entry.grid(row=0, column=2, padx=4, pady=3, sticky=tk.E)
+        tooltip.Tooltip(self.change_sign, text='Change offset sign')
+        self.offset_entry.grid(row=0, column=1, padx=0, pady=3, sticky=tk.E)
+        self.change_sign.grid(row=0, column=2, padx=0, pady=3, sticky=tk.E)
         # units of measurements settings
         self.um_options = ttk.Frame(self.options)
         self.um_options.grid(row=1, columnspan=3, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.um_options_label = ttk.Label(self.um_options, text='Units:')
+        self.um_options_label = ttk.Label(self.um_options, text='Units:', width=14)
         self.um_options_label.grid(row=0, column=0)
         self.units_cb = ttk.Combobox(
-            self.um_options, textvariable=self.units, state='readonly',
+            self.um_options, textvariable=self.units, state='readonly', width=10,
             values=['mm', 'um', 'cm', 'm', 'g']
         )
         self.units_cb.bind('<<ComboboxSelected>>', self.__set_units)
-        self.units_cb.grid(row=0, column=1, padx=2, pady=2, sticky=tk.N+tk.W)
+        self.units_cb.grid(row=0, column=1, padx=2, pady=2, sticky=tk.N+tk.E)
         self.precision_e = ttk.Entry(
             self.um_options, textvariable=self.precision, validate='key',
             validatecommand=(self._validate_num, '%S', '%P'), width=4
         )
         self.precision_e.bind('<Return>', self.__set_precision)
-        self.precision_e.grid(row=0, column=2, padx=2, pady=2, sticky=tk.W)
+        self.precision_e.grid(row=0, column=2, padx=2, pady=2, sticky=tk.E)
         tooltip.Tooltip(self.units_cb, text='Choose unit of measurement')
         tooltip.Tooltip(self.precision_e, text='Enter decimals')
 
@@ -332,6 +361,8 @@ class MainFrame(ttk.Frame):
         self.offset_entry.delete(0, tk.END)
         self.offset_option.set(False)
         self.min_max_var.set(self.min_max_var.default)
+        self.actual_min.set(self.actual_min.default)
+        self.actual_max.set(self.actual_max.default)
         self.count_var.set('Count: 0')
         self.warning_label.configure(image=self.neutral_icon)
         self.warning_label.image = self.neutral_icon
