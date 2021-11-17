@@ -67,6 +67,9 @@ class MainFrame(ttk.Frame):
         self.neutral_icon = tk.PhotoImage(data=icons.neutral_led)
         self.yellow_icon = tk.PhotoImage(data=icons.yellow_led)
         self.alert_icon = tk.PhotoImage(data=icons.alert_triangle)
+        self.sm_neutral_led = tk.PhotoImage(data=icons.sm_gray_led)
+        self.sm_green_led = tk.PhotoImage(data=icons.sm_green_led)
+        self.sm_yellow_led = tk.PhotoImage(data=icons.sm_yellow_led)
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - - -')
@@ -133,6 +136,14 @@ class MainFrame(ttk.Frame):
         def set_yellow_icon(obj_ref):
             obj_ref.configure(image=self.yellow_icon)
             obj_ref.image = self.yellow_icon
+        
+        def set_sm_green_led(obj_ref):
+            obj_ref.configure(image=self.sm_green_led)
+            obj_ref.image = self.sm_green_led
+        
+        def set_sm_yellow_led(obj_ref):
+            obj_ref.configure(image=self.sm_yellow_led)
+            obj_ref.image = self.sm_yellow_led
 
         self.count_var.set(subject.count_values())
         self.flasher(self.count_label, 'snow2')
@@ -153,6 +164,15 @@ class MainFrame(ttk.Frame):
                 set_yellow_icon(self.alert_on_interval)
             else:
                 set_green_icon(self.alert_on_interval)
+            if self.controller.stats.min < min_v:
+                set_sm_yellow_led(self.min_led)
+            else:
+                set_sm_green_led(self.min_led)
+            if self.controller.stats.max > max_v:
+                set_sm_yellow_led(self.max_led)
+            else:
+                set_sm_green_led(self.max_led)
+                
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -238,13 +258,19 @@ class MainFrame(ttk.Frame):
 
         # min/max allowed dimensions
         self.min_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.CENTER, text='Min.'
+            self.dimensions, anchor=tk.W, text='Min.'
         )
         self.max_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.CENTER, text='Max.'
+            self.dimensions, anchor=tk.W, text='Max.'
         )
+        self.min_led = ttk.Label(
+            self.dimensions, image=self.sm_neutral_led)
+        self.max_led = ttk.Label(
+            self.dimensions, image=self.sm_neutral_led)
         self.min_dim_label.grid(row=0, column=1, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.max_dim_label.grid(row=0, column=2, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.max_dim_label.grid(row=0, column=3, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.min_led.grid(row=0, column=2, padx=2, sticky=tk.E)
+        self.max_led.grid(row=0, column=4, padx=2, sticky=tk.E)
         # nominal dimensions
         self.nominal_label = ttk.Label(
             self.dimensions, anchor=tk.E, text='Nominal:'
@@ -262,8 +288,8 @@ class MainFrame(ttk.Frame):
             justify=tk.RIGHT
         )
         self.nominal_label.grid(row=1, column=0, pady=3, sticky=tk.W+tk.E)
-        self.min_dim.grid(row=1, column=1, padx=2, pady=3, sticky=tk.E)
-        self.max_dim.grid(row=1, column=2, padx=2, pady=3, sticky=tk.E)
+        self.min_dim.grid(row=1, column=1, columnspan=2, padx=2, pady=3, sticky=tk.E)
+        self.max_dim.grid(row=1, column=3, columnspan=2, padx=2, pady=3, sticky=tk.E)
         # actual dimensions
         self.actual_label = ttk.Label(
             self.dimensions, anchor=tk.E, text='Actual:'
@@ -277,8 +303,8 @@ class MainFrame(ttk.Frame):
             self.dimensions, width=10, textvariable=self.actual_max,
             justify=tk.RIGHT, state='readonly'
         )
-        self.min_entry.grid(row=2, column=1, padx=2, pady=3, sticky=tk.E)
-        self.max_entry.grid(row=2, column=2, padx=2, pady=3, sticky=tk.E)
+        self.min_entry.grid(row=2, column=1, columnspan=2, padx=2, pady=3, sticky=tk.E)
+        self.max_entry.grid(row=2, column=3, columnspan=2, padx=2, pady=3, sticky=tk.E)
         # tooltips
         tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
         tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
@@ -302,7 +328,7 @@ class MainFrame(ttk.Frame):
                                       validatecommand=(self._validate_num, '%S', '%P'))
         tooltip.Tooltip(self.change_sign, text='Change offset sign')
         self.offset_entry.grid(row=0, column=1, padx=0, pady=3, sticky=tk.E)
-        self.change_sign.grid(row=0, column=2, padx=0, pady=3, sticky=tk.E)
+        self.change_sign.grid(row=0, column=2, padx=4, pady=3, sticky=tk.E)
         # units of measurements settings
         self.um_options = ttk.Frame(self.options)
         self.um_options.grid(row=1, columnspan=3, padx=4, pady=3, sticky=tk.W+tk.E)
@@ -313,13 +339,13 @@ class MainFrame(ttk.Frame):
             values=['mm', 'um', 'cm', 'm', 'g']
         )
         self.units_cb.bind('<<ComboboxSelected>>', self.__set_units)
-        self.units_cb.grid(row=0, column=1, padx=2, pady=2, sticky=tk.N+tk.E)
+        self.units_cb.grid(row=0, column=1, padx=1, pady=2, sticky=tk.N+tk.E)
         self.precision_e = ttk.Entry(
             self.um_options, textvariable=self.precision, validate='key',
             validatecommand=(self._validate_num, '%S', '%P'), width=4
         )
         self.precision_e.bind('<Return>', self.__set_precision)
-        self.precision_e.grid(row=0, column=2, padx=2, pady=2, sticky=tk.E)
+        self.precision_e.grid(row=0, column=2, padx=1, pady=2, sticky=tk.E)
         tooltip.Tooltip(self.units_cb, text='Choose unit of measurement')
         tooltip.Tooltip(self.precision_e, text='Enter decimals')
 
@@ -364,10 +390,16 @@ class MainFrame(ttk.Frame):
         self.actual_min.set(self.actual_min.default)
         self.actual_max.set(self.actual_max.default)
         self.count_var.set('Count: 0')
+        # "reset" icons
         self.warning_label.configure(image=self.neutral_icon)
         self.warning_label.image = self.neutral_icon
         self.alert_on_interval.configure(image=self.neutral_icon)
         self.alert_on_interval.image = self.neutral_icon
+        self.min_led.configure(image=self.sm_neutral_led)
+        self.max_led.configure(image=self.sm_neutral_led)
+        self.min_led.image = self.sm_neutral_led
+        self.max_led.image = self.sm_neutral_led
+        # reset tkVars
         self.min_warning.set(0.0)
         self.max_warning.set(0.0)
         self.controller.set_values([])
@@ -381,11 +413,11 @@ class MainFrame(ttk.Frame):
         if self.controller.values:
             filename = filedialog.asksaveasfilename(initialdir="/%HOME",
                                                     title="Export to file",
-                                                    defaultextension=".xlsx",
-                                                    filetypes=(("XLSX files", "*.xlsx"),
-                                                               ("CSV files", "*.csv"),
+                                                    defaultextension=".csv",
+                                                    filetypes=(("CSV files", "*.csv"),
+                                                               ("JSON files", "*.json"),
                                                                ("all files", "*.*")))
             if filename.endswith('.csv'):
                 self.controller.export_to_csv(filename)
-            else:
-                self.controller.export_xlsx(filename)
+            if filename.endswith('.json'):
+                self.controller.export_as_json(filename)
