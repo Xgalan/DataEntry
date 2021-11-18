@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import string
+import tkinter as tk
 from tkinter import filedialog, ttk
 
-from . import tk, icons, tooltip
+from data_entry import icons, tooltip
 
 
 

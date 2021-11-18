@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 
-from . import view, controller
-
+import data_entry.view as view
+import data_entry.controller as controller
 
 
 def init():
@@ -25,7 +25,7 @@ def init():
 class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__()
-        from . import icons
+        import data_entry.icons as icons
         window_icon = tk.PhotoImage(data=icons.window_image)
         self.tk.call('wm', 'iconphoto', self._w, window_icon)
         self.title("Data Entry")

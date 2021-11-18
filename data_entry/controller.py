@@ -3,13 +3,14 @@ import csv
 import json
 from datetime import date
 
-from . import model, statsutils
+from data_entry.model import Model
+from data_entry.statsutils import Stats
 
 
 
 class Controller:
     def __init__(self, view=None):
-        self._model = model.Model()
+        self._model = Model()
         self.view = view
 
     def __getattr__(self, name):
@@ -39,7 +40,7 @@ class Controller:
 
     @property
     def stats(self):
-        return statsutils.Stats(self.values)
+        return Stats(self.values)
 
     def export_to_csv(self, filename):
         um = self.units.description
