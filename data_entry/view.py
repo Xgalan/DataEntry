@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 import string
-import tkinter as tk
-from tkinter import messagebox, filedialog, ttk
+from tkinter import filedialog, ttk
 
-import icons
-import tooltip
+from . import tk, icons, tooltip
 
 
 

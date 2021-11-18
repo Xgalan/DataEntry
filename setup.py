@@ -34,6 +34,7 @@ setup(
         "ttkbootstrap",
         ],
     include_package_data=True,
+    python_requires=">=3.5",
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
