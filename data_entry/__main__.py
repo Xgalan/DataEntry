@@ -21,8 +21,7 @@ def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         app.destroy()
 
-
-if __name__ == "__main__":
+def init():
     app = App()
     tkview = MainFrame(master=app)
     controller = Controller(view=tkview)
@@ -30,3 +29,6 @@ if __name__ == "__main__":
     tkview.controller = controller
     app.protocol("WM_DELETE_WINDOW", on_closing)
     app.mainloop()
+
+if __name__ == "__main__":
+    init()

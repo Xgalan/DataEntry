@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 __license__ = '''
 This file is part of DataEntry.
 DataEntry is free software: you can redistribute it and/or modify
@@ -14,26 +16,24 @@ Public License along with DataEntry.  If not, see
 '''
 # pylint: disable=bad-whitespace
 
-import setuptools
+from setuptools import setup, find_packages
 
-setuptools.setup(
+
+setup(
     name="DataEntry",
-    version="0.1.0",
+    version="0.2.0",
     url="https://github.com/Xgalan/DataEntry",
-
     author="Erik Mascheri",
     author_email="erik_mascheri@fastmail.com",
-
     license='GPLv3',
     description="A simple editor for lists of numeric values.",
     long_description=open('README.md').read(),
-
-    packages=setuptools.find_packages(),
-
+    packages=find_packages(),
     install_requires=[
-        "openpyxl==2.6.2",
+        #"openpyxl==2.6.4",
+        "ttkbootstrap",
         ],
-
+    include_package_data=True,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
@@ -42,10 +42,10 @@ setuptools.setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
-
     entry_points='''
         [gui_scripts]
-        data_entry=data_entry.main:main
+        data-entry = data_entry:init
     ''',
 )
