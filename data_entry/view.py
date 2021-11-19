@@ -3,6 +3,8 @@ import string
 import tkinter as tk
 from tkinter import filedialog, ttk
 
+from ttkbootstrap import Style
+
 from data_entry import icons, tooltip
 
 
@@ -33,24 +35,23 @@ class RibbonFrame(ttk.Frame):
         self.__create_widgets()
 
     def __create_widgets(self):
-        # big buttons
         self.buttons = ttk.Frame(self)
         self.buttons.grid(row=0, column=0, sticky=tk.W+tk.E)
         # copy to clipboard
         self.copy_to_clip_btn = ttk.Button(
-            self.buttons, text="Copy", compound=tk.TOP,
+            self.buttons, text="Copy", compound=tk.TOP, width=8,
             command=self.master.cp_to_clipboard, image=self.copy_icon)
         self.copy_to_clip_btn.image = self.copy_icon
         self.copy_to_clip_btn.grid(row=0, column=0, padx=1, pady=2)
         # reset data entry button
         self.data_entry_clear = ttk.Button(
-            self.buttons, command=self.master.clear_data_entry, text="Reset",
-            compound=tk.TOP, image=self.delete_icon)
+            self.buttons, command=self.master.clear_data_entry, text="Clear",
+            width=8, compound=tk.TOP, image=self.delete_icon)
         self.data_entry_clear.image = self.delete_icon
         self.data_entry_clear.grid(row=0, column=1, padx=1, pady=2)
         # save to file button
         self.save_btn = ttk.Button(self.buttons, text="Save as...", compound=tk.TOP,
-            image=self.save_icon, command=self.master.export_as)
+            width=10, image=self.save_icon, command=self.master.export_as)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=2, padx=1, pady=2)
         # tooltips
@@ -85,13 +86,11 @@ class MainFrame(ttk.Frame):
         self.precision = tk.IntVar(value=2)
         # validation callbacks
         self._validate_num = self.register(validate_number)
-        # create graphics
+        self.tolerance_is_set = False
         self.grid_columnconfigure(0, weight=1)
         self.grid()
         # configure style
-        self.style = ttk.Style(self)
-        self.style.configure('Bold.TButton', font=('Helvetica', 9, 'bold'), padding=(0, 0))
-
+        self.style = Style(theme='cosmo')
         self.__create_widgets()
 
     def __set_units(self, event):
@@ -155,23 +154,23 @@ class MainFrame(ttk.Frame):
             #TODO case if first value is zero i.e., "0.00"
             last_val = round(subject.values[-1], subject.precision)
             self.last_value.set(str(last_val) + ' ' + subject.units.units)
-            if last_val >= min_v and last_val <= max_v:
-                set_green_icon(self.warning_label)
-            else:
-                set_yellow_icon(self.warning_label)
-            if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
-                set_yellow_icon(self.alert_on_interval)
-            else:
-                set_green_icon(self.alert_on_interval)
-            if self.controller.stats.min < min_v:
-                set_sm_yellow_led(self.min_led)
-            else:
-                set_sm_green_led(self.min_led)
-            if self.controller.stats.max > max_v:
-                set_sm_yellow_led(self.max_led)
-            else:
-                set_sm_green_led(self.max_led)
-                
+            if self.tolerance_is_set:
+                if last_val >= min_v and last_val <= max_v:
+                    set_green_icon(self.warning_label)
+                else:
+                    set_yellow_icon(self.warning_label)
+                if self.controller.stats.min < min_v or self.controller.stats.max > max_v:
+                    set_yellow_icon(self.alert_on_interval)
+                else:
+                    set_green_icon(self.alert_on_interval)
+                if self.controller.stats.min < min_v:
+                    set_sm_yellow_led(self.min_led)
+                else:
+                    set_sm_green_led(self.min_led)
+                if self.controller.stats.max > max_v:
+                    set_sm_yellow_led(self.max_led)
+                else:
+                    set_sm_green_led(self.max_led)
         except IndexError:
             self.last_value.set('No valid value')
 
@@ -190,9 +189,12 @@ class MainFrame(ttk.Frame):
         text = self.get_editor_content()
         if text is not None:
             self.controller.set_values(text.splitlines())
-            self.controller.set_tolerance(
-                {'min': float(self.min_dim.get()), 'max': float(self.max_dim.get())}
-            )
+
+    def set_tolerance(self):
+        self.tolerance_is_set = True
+        self.controller.set_tolerance(
+            {'min': float(self.min_dim.get()), 'max': float(self.max_dim.get())}
+        )
 
     def __create_widgets(self):
         # ribbon menu
@@ -200,7 +202,6 @@ class MainFrame(ttk.Frame):
         self.ribbon['padding'] = (1, 1)
         self.ribbon['borderwidth'] = 1
         self.ribbon.grid(row=1, column=0, sticky='NWE')
-
         # editor
         self.editor = ttk.Frame(self)
         self.editor.grid(row=2, column=0, pady=2, sticky=tk.W+tk.E)
@@ -212,14 +213,13 @@ class MainFrame(ttk.Frame):
         # update event on data entry text widget
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
-
         # passed/failed frame
         self.editor_menu = ttk.Frame(self)
         self.editor_menu.columnconfigure(0, weight=2)
         self.editor_menu.columnconfigure(1, weight=1)
         self.editor_menu.grid(row=3, column=0, pady=2, sticky=tk.W+tk.E)
         # model elements count
-        self.count_label = ttk.Label(self.editor_menu, background='white',
+        self.count_label = ttk.Label(self.editor_menu,
                                      borderwidth=1, relief=tk.SUNKEN,
                                      font=("Helvetica", 11, "bold"),
                                      padding=(2, 2),
@@ -230,7 +230,7 @@ class MainFrame(ttk.Frame):
         self.warning_label = ttk.Label(self.editor_menu,
                                        image=self.neutral_icon)
         self.warning_label.grid(row=1, column=1, padx=4)
-        self.last_value_with_offset = ttk.Label(self.editor_menu, background='white',
+        self.last_value_with_offset = ttk.Label(self.editor_menu,
                                                 width=16, borderwidth=1, relief=tk.SUNKEN,
                                                 font=("Helvetica", 11, "bold"),
                                                 padding=(2, 2),
@@ -239,7 +239,7 @@ class MainFrame(ttk.Frame):
         tooltip.Tooltip(self.last_value_with_offset, text='Last value')
         # min - max values
         self.copy_preview = ttk.Label(self.editor_menu,
-                                      textvariable=self.min_max_var, background='white',
+                                      textvariable=self.min_max_var,
                                       font=("Helvetica", 11, "bold"), borderwidth=1,
                                       padding=(2, 2), relief=tk.SUNKEN)
         self.copy_preview.grid(row=2, column=0, padx=4, sticky=tk.W+tk.E)
@@ -247,27 +247,25 @@ class MainFrame(ttk.Frame):
         self.alert_on_interval = ttk.Label(self.editor_menu,
                                            image=self.neutral_icon)
         self.alert_on_interval.grid(row=2, column=1, padx=4)
-
         # dimensions group
         self.dimensions = ttk.LabelFrame(self, text="Dimensions")
         self.dimensions.columnconfigure(0, weight=1)
         self.dimensions.columnconfigure(1, weight=2)
         self.dimensions.columnconfigure(2, weight=2)
         self.dimensions.grid(row=4, padx=4, pady=4, sticky=tk.W+tk.E)
-
         # min/max allowed dimensions
         self.min_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.W, text='Min.'
+            self.dimensions, anchor=tk.E, text='Min.'
         )
         self.max_dim_label = ttk.Label(
-            self.dimensions, anchor=tk.W, text='Max.'
+            self.dimensions, anchor=tk.E, text='Max.'
         )
         self.min_led = ttk.Label(
             self.dimensions, image=self.sm_neutral_led)
         self.max_led = ttk.Label(
             self.dimensions, image=self.sm_neutral_led)
-        self.min_dim_label.grid(row=0, column=1, padx=4, pady=3, sticky=tk.W+tk.E)
-        self.max_dim_label.grid(row=0, column=3, padx=4, pady=3, sticky=tk.W+tk.E)
+        self.min_dim_label.grid(row=0, column=1, padx=4, pady=3, sticky=tk.E)
+        self.max_dim_label.grid(row=0, column=3, padx=4, pady=3, sticky=tk.E)
         self.min_led.grid(row=0, column=2, padx=2, sticky=tk.E)
         self.max_led.grid(row=0, column=4, padx=2, sticky=tk.E)
         # nominal dimensions
@@ -307,6 +305,16 @@ class MainFrame(ttk.Frame):
         # tooltips
         tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
         tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
+        # Set / Reset buttons
+        self.set_reset = ttk.Frame(self.dimensions, width=10)
+        self.set_reset.grid(row=3, column=0, columnspan=5, padx=2, sticky=tk.E)
+        self.reset = ttk.Button(
+            self.set_reset, command=self.reset_tolerance, text="Reset", width=5)
+        self.reset.grid(row=0, column=0, padx=2, pady=3, sticky=tk.E)
+        self.set = ttk.Button(
+            self.set_reset, command=self.set_tolerance, text="Set", width=5)
+        self.set.grid(row=0, column=1, padx=2, pady=3, sticky=tk.E)
+
 
         # measure options group frame
         self.options = ttk.LabelFrame(self, text="Options")
@@ -377,18 +385,7 @@ class MainFrame(ttk.Frame):
             self.clipboard_append(self.min_max_var.get())
         self.update()
 
-    def clear_data_entry(self):
-        '''
-        delete the content of the editor and delete the values of the options.
-        '''
-        self.data_entry.delete("1.0", 'end-1c')
-        self.data_entry.edit_modified(False)
-        self.offset_entry.delete(0, tk.END)
-        self.offset_option.set(False)
-        self.min_max_var.set(self.min_max_var.default)
-        self.actual_min.set(self.actual_min.default)
-        self.actual_max.set(self.actual_max.default)
-        self.count_var.set('Count: 0')
+    def reset_warning_icons(self):
         # "reset" icons
         self.warning_label.configure(image=self.neutral_icon)
         self.warning_label.image = self.neutral_icon
@@ -398,14 +395,31 @@ class MainFrame(ttk.Frame):
         self.max_led.configure(image=self.sm_neutral_led)
         self.min_led.image = self.sm_neutral_led
         self.max_led.image = self.sm_neutral_led
+
+    def clear_data_entry(self):
+        ''' delete the content of the editor and delete the values of the options.
+        '''
+        # editor and associated variables
+        self.data_entry.delete("1.0", 'end-1c')
+        self.data_entry.edit_modified(False)
+        self.controller.set_values([])
+        self.count_var.set('Count: 0')
+        self.min_max_var.set(self.min_max_var.default)
+        self.actual_min.set(self.actual_min.default)
+        self.actual_max.set(self.actual_max.default)
+        # offset option reset
+        self.offset_entry.delete(0, tk.END)
+        self.controller.set_offset(0.0)
+        self.offset_option.set(False)
         # reset tkVars
+        self.controller.set_precision(2)
+
+    def reset_tolerance(self):
         self.min_warning.set(0.0)
         self.max_warning.set(0.0)
-        self.controller.set_values([])
-        self.controller.set_offset(0.0)
-        self.controller.set_precision(2)
         self.controller.set_tolerance({"min": 0.0, "max": 0.0})
-        self.update()
+        self.reset_warning_icons()
+        self.tolerance_is_set = False
 
     def export_as(self):
         ''' save as a file '''
