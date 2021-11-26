@@ -413,6 +413,7 @@ class MainFrame(ttk.Frame):
         self.offset_option.set(False)
         # reset tkVars
         self.controller.set_precision(2)
+        self.reset_warning_icons()
 
     def reset_tolerance(self):
         self.min_warning.set(0.0)
