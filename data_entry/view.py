@@ -19,6 +19,16 @@ def validate_number(*args):
         return False
 
 
+
+class Window(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        window_icon = tk.PhotoImage(data=icons.window_image)
+        self.tk.call('wm', 'iconphoto', self._w, window_icon)
+        self.title("Data Entry")
+        self.resizable(False, False)
+
+
 class RibbonFrame(ttk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -79,8 +89,8 @@ class MainFrame(ttk.Frame):
         self.actual_min.default = '- -'
         self.actual_max.default = '- -'
         self.count_var = tk.StringVar(value='Count: 0')
-        self.min_warning = tk.DoubleVar(0.0)
-        self.max_warning = tk.DoubleVar(0.0)
+        self.min_warning = tk.DoubleVar()
+        self.max_warning = tk.DoubleVar()
         self.last_value = tk.StringVar(value='- - - - - -')
         self.units = tk.StringVar(value='mm')
         self.precision = tk.IntVar(value=2)

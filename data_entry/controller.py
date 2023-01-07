@@ -3,14 +3,13 @@ import csv
 import json
 from datetime import date
 
-from data_entry.model import Model
 from data_entry.statsutils import Stats
 
 
 
 class Controller:
-    def __init__(self, view=None):
-        self._model = Model()
+    def __init__(self, model=None, view=None):
+        self._model = model
         self.view = view
 
     def __getattr__(self, name):
