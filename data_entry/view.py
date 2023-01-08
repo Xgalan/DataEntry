@@ -35,7 +35,6 @@ class RibbonFrame(ttk.Frame):
         # validation callbacks
         self._validate_num = self.register(validate_number)
         # icons
-        self.copy_icon = tk.PhotoImage(data=icons.copy_image)
         self.delete_icon = tk.PhotoImage(data=icons.delete_image)
         self.save_icon = tk.PhotoImage(data=icons.save_image)
         self.rowconfigure(0, weight=2)
@@ -47,12 +46,6 @@ class RibbonFrame(ttk.Frame):
     def __create_widgets(self):
         self.buttons = ttk.Frame(self)
         self.buttons.grid(row=0, column=0, sticky=tk.W+tk.E)
-        # copy to clipboard
-        self.copy_to_clip_btn = ttk.Button(
-            self.buttons, text="Copy", compound=tk.TOP, width=8,
-            command=self.master.cp_to_clipboard, image=self.copy_icon)
-        self.copy_to_clip_btn.image = self.copy_icon
-        self.copy_to_clip_btn.grid(row=0, column=0, padx=1, pady=2)
         # reset data entry button
         self.data_entry_clear = ttk.Button(
             self.buttons, command=self.master.clear_data_entry, text="Clear",
@@ -60,12 +53,11 @@ class RibbonFrame(ttk.Frame):
         self.data_entry_clear.image = self.delete_icon
         self.data_entry_clear.grid(row=0, column=1, padx=1, pady=2)
         # save to file button
-        self.save_btn = ttk.Button(self.buttons, text="Save as...", compound=tk.TOP,
+        self.save_btn = ttk.Button(self.buttons, text="Export as...", compound=tk.TOP,
             width=10, image=self.save_icon, command=self.master.export_as)
         self.save_btn.image = self.save_icon
         self.save_btn.grid(row=0, column=2, padx=1, pady=2)
         # tooltips
-        tooltip.Tooltip(self.copy_to_clip_btn, text='Copy to clipboard')
         tooltip.Tooltip(self.data_entry_clear, text='Reset')
         tooltip.Tooltip(self.save_btn, text='Save as...')
 
@@ -80,6 +72,8 @@ class MainFrame(ttk.Frame):
         self.sm_neutral_led = tk.PhotoImage(data=icons.sm_gray_led)
         self.sm_green_led = tk.PhotoImage(data=icons.sm_green_led)
         self.sm_yellow_led = tk.PhotoImage(data=icons.sm_yellow_led)
+        self.copy_icon = tk.PhotoImage(data=icons.copy_image)
+
         # tk Vars initialization
         self.offset_option = tk.BooleanVar()
         self.min_max_var = tk.StringVar(value='- - - - - -')
@@ -108,15 +102,6 @@ class MainFrame(ttk.Frame):
     
     def __set_precision(self, event):
         self.controller.set_precision(int(self.precision.get()))
-
-    def validate_number(self, *args):
-        list_of_num = list(string.digits)
-        list_of_num.append('.')
-        list_of_num.append('-')
-        if args[0] in (list_of_num):
-            return True
-        else:
-            return False
 
     def flasher(self, widget, color):
         ''' Change the background color of a widget for 100ms. '''
@@ -219,7 +204,7 @@ class MainFrame(ttk.Frame):
         self.scrollbar.grid(row=0, column=1, padx=0, pady=1, sticky=tk.N+tk.S)
         self.data_entry = tk.Text(self.editor, width=30,
                                   yscrollcommand=self.scrollbar.set)
-        self.data_entry.grid(row=0, column=0, padx=0, sticky=tk.W+tk.E)
+        self.data_entry.grid(row=0, column=0, padx=3, sticky=tk.W+tk.E)
         # update event on data entry text widget
         self.data_entry.bind("<Return>", self.update_model_values)
         self.scrollbar.config(command=self.data_entry.yview)
@@ -315,15 +300,25 @@ class MainFrame(ttk.Frame):
         # tooltips
         tooltip.Tooltip(self.min_dim, text='Enter lower dimension')
         tooltip.Tooltip(self.max_dim, text='Enter upper dimension')
+
         # Set / Reset buttons
         self.set_reset = ttk.Frame(self.dimensions, width=10)
         self.set_reset.grid(row=3, column=0, columnspan=5, padx=2, sticky=tk.E)
+        # copy to clipboard 
+        self.copy_to_clip = ttk.Button(
+            self.set_reset, command=self.cp_to_clipboard, text="Copy", compound=tk.LEFT, width=6, image=self.copy_icon
+        )
+        self.copy_to_clip.image = self.copy_icon
+        self.copy_to_clip.grid(row=0, column=0, padx=2, pady=3, sticky=tk.E)
+    
         self.reset = ttk.Button(
-            self.set_reset, command=self.reset_tolerance, text="Reset", width=5)
-        self.reset.grid(row=0, column=0, padx=2, pady=3, sticky=tk.E)
+            self.set_reset, command=self.reset_tolerance, text="Reset", width=4)
+        self.reset.grid(row=0, column=1, padx=2, pady=3, sticky=tk.E)
         self.set = ttk.Button(
-            self.set_reset, command=self.set_tolerance, text="Set", width=5)
-        self.set.grid(row=0, column=1, padx=2, pady=3, sticky=tk.E)
+            self.set_reset, command=self.set_tolerance, text="Set", width=4)
+        self.set.grid(row=0, column=2, padx=2, pady=3, sticky=tk.E)
+        tooltip.Tooltip(self.copy_to_clip, text='Copy to clipboard')
+
 
 
         # measure options group frame
@@ -339,7 +334,7 @@ class MainFrame(ttk.Frame):
                                                   command=self.offset_cback)
         self.offset_checkbutton.grid(row=0, column=0, padx=4, pady=3, sticky=tk.W)
         # offset entry with validation
-        self.change_sign = ttk.Button(self.options, text='+ -', style='Bold.TButton',
+        self.change_sign = ttk.Button(self.options, text="\261", style='Bold.TButton',
                                       command=self.change_value_sign, width=4)
         self.offset_entry = ttk.Entry(self.options, width=8, validate='key',
                                       validatecommand=(self._validate_num, '%S', '%P'))
