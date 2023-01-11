@@ -18,8 +18,7 @@ class Dialog(tk.Toplevel):
         if not self.initial_focus:
             self.initial_focus = self
         self.protocol("WM_DELETE_WINDOW", self.cancel)
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                  parent.winfo_rooty()+50))
+        self.geometry("+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50))
         self.initial_focus.focus_set()
         self.wait_window(self)
 
@@ -34,8 +33,7 @@ class Dialog(tk.Toplevel):
         # add standard button box. override if you don't want the
         # standard buttons
         box = tk.Frame(self)
-        w = tk.Button(box, text="OK", width=10,
-                      command=self.ok, default=tk.ACTIVE)
+        w = tk.Button(box, text="OK", width=10, command=self.ok, default=tk.ACTIVE)
         w.pack(side=tk.LEFT, padx=5, pady=5)
         w = tk.Button(box, text="Cancel", width=10, command=self.cancel)
         w.pack(side=tk.LEFT, padx=5, pady=5)
@@ -47,7 +45,7 @@ class Dialog(tk.Toplevel):
     # standard button semantics
     def ok(self, event=None):
         if not self.validate():
-            self.initial_focus.focus_set() # put focus back
+            self.initial_focus.focus_set()  # put focus back
             return
         self.withdraw()
         self.update_idletasks()
@@ -62,7 +60,7 @@ class Dialog(tk.Toplevel):
     #
     # command hooks
     def validate(self):
-        return 1 # override
+        return 1  # override
 
     def apply(self):
-        pass # override
+        pass  # override
